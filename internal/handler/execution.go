@@ -8,7 +8,7 @@ import (
 	"go-rundeck/internal/middleware"
 	"go-rundeck/internal/service"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 // ExecutionHandler handles execution routes including SSE log streaming.
@@ -23,7 +23,7 @@ func NewExecutionHandler(execSvc *service.ExecutionService, projectSvc *service.
 }
 
 // List renders execution history for a project.
-func (h *ExecutionHandler) List(c echo.Context) error {
+func (h *ExecutionHandler) List(c *echo.Context) error {
 	projectID, err := parseID(c, "id")
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid project id")
@@ -55,7 +55,7 @@ func (h *ExecutionHandler) List(c echo.Context) error {
 }
 
 // Show renders execution detail.
-func (h *ExecutionHandler) Show(c echo.Context) error {
+func (h *ExecutionHandler) Show(c *echo.Context) error {
 	execID, err := parseID(c, "eid")
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid execution id")
@@ -78,7 +78,7 @@ func (h *ExecutionHandler) Show(c echo.Context) error {
 }
 
 // StreamLogs provides a Server-Sent Events stream of log entries.
-func (h *ExecutionHandler) StreamLogs(c echo.Context) error {
+func (h *ExecutionHandler) StreamLogs(c *echo.Context) error {
 	execID, err := parseID(c, "eid")
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid execution id")
@@ -96,17 +96,19 @@ func (h *ExecutionHandler) StreamLogs(c echo.Context) error {
 	w.Header().Set("X-Accel-Buffering", "no")
 	w.WriteHeader(http.StatusOK)
 
+	rc := http.NewResponseController(w)
+
 	// Send existing logs first
 	existingLogs, _ := h.execSvc.GetLogs(execID)
 	for _, l := range existingLogs {
 		fmt.Fprintf(w, "data: [%s][%s] %s\n\n", l.NodeName, l.LogLevel, l.Message)
-		w.Flush()
+		rc.Flush()
 	}
 
 	// If execution is done, close stream
 	if exec.Status != "running" {
 		fmt.Fprintf(w, "event: done\ndata: execution finished\n\n")
-		w.Flush()
+		rc.Flush()
 		return nil
 	}
 
@@ -122,18 +124,18 @@ func (h *ExecutionHandler) StreamLogs(c echo.Context) error {
 		case event, ok := <-ch:
 			if !ok {
 				fmt.Fprintf(w, "event: done\ndata: stream closed\n\n")
-				w.Flush()
+				rc.Flush()
 				return nil
 			}
 			l := event.Log
 			fmt.Fprintf(w, "data: [%s][%s] %s\n\n", l.NodeName, l.LogLevel, l.Message)
-			w.Flush()
+			rc.Flush()
 		}
 	}
 }
 
 // Abort stops a running execution.
-func (h *ExecutionHandler) Abort(c echo.Context) error {
+func (h *ExecutionHandler) Abort(c *echo.Context) error {
 	execID, err := parseID(c, "eid")
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid execution id")

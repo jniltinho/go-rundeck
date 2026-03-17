@@ -7,7 +7,7 @@ import (
 	"go-rundeck/internal/middleware"
 	"go-rundeck/internal/service"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 // ProjectHandler handles project CRUD routes.
@@ -21,7 +21,7 @@ func NewProjectHandler(svc *service.ProjectService) *ProjectHandler {
 }
 
 // List renders the projects list page.
-func (h *ProjectHandler) List(c echo.Context) error {
+func (h *ProjectHandler) List(c *echo.Context) error {
 	projects, err := h.svc.List()
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -35,7 +35,7 @@ func (h *ProjectHandler) List(c echo.Context) error {
 }
 
 // Show renders the project detail page.
-func (h *ProjectHandler) Show(c echo.Context) error {
+func (h *ProjectHandler) Show(c *echo.Context) error {
 	id, err := parseID(c, "id")
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid project id")
@@ -53,7 +53,7 @@ func (h *ProjectHandler) Show(c echo.Context) error {
 }
 
 // Create handles project creation form submission.
-func (h *ProjectHandler) Create(c echo.Context) error {
+func (h *ProjectHandler) Create(c *echo.Context) error {
 	userID := c.Get(middleware.SessionUserID).(uint)
 	name := c.FormValue("name")
 	description := c.FormValue("description")
@@ -67,7 +67,7 @@ func (h *ProjectHandler) Create(c echo.Context) error {
 }
 
 // Update handles project update form submission.
-func (h *ProjectHandler) Update(c echo.Context) error {
+func (h *ProjectHandler) Update(c *echo.Context) error {
 	id, err := parseID(c, "id")
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid project id")
@@ -83,7 +83,7 @@ func (h *ProjectHandler) Update(c echo.Context) error {
 }
 
 // Delete soft-deletes a project.
-func (h *ProjectHandler) Delete(c echo.Context) error {
+func (h *ProjectHandler) Delete(c *echo.Context) error {
 	id, err := parseID(c, "id")
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid project id")
@@ -95,7 +95,7 @@ func (h *ProjectHandler) Delete(c echo.Context) error {
 }
 
 // parseID extracts and converts a URL param to uint.
-func parseID(c echo.Context, param string) (uint, error) {
+func parseID(c *echo.Context, param string) (uint, error) {
 	raw := c.Param(param)
 	val, err := strconv.ParseUint(raw, 10, 64)
 	if err != nil {

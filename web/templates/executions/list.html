@@ -12,7 +12,7 @@
     </div>
   </div>
 
-  <div class="bg-white border-4 border-[#0C0C0C] shadow-[6px_6px_0_#0C0C0C] overflow-x-auto">
+  <div class="bg-white border-4 border-[#0C0C0C] shadow-[3px_3px_0_#0C0C0C] overflow-x-auto">
     <table class="w-full text-sm font-mono">
       <thead>
         <tr class="bg-[#0C0C0C] text-white">
@@ -63,13 +63,13 @@
   <div class="flex gap-2 font-mono text-sm">
     {{if gt .Page 1}}
     <a href="?page={{sub .Page 1}}"
-       class="px-3 py-1 bg-white border-2 border-[#0C0C0C] shadow-[2px_2px_0_#0C0C0C] hover:bg-[#F5F0E8]">
+       class="px-3 py-1 bg-white border-2 border-[#0C0C0C] shadow-[1px_1px_0_#0C0C0C] hover:bg-[#F5F0E8]">
       &larr; Prev
     </a>
     {{end}}
     <span class="px-3 py-1 bg-[#FFD600] border-2 border-[#0C0C0C] font-bold">Page {{.Page}}</span>
     <a href="?page={{add .Page 1}}"
-       class="px-3 py-1 bg-white border-2 border-[#0C0C0C] shadow-[2px_2px_0_#0C0C0C] hover:bg-[#F5F0E8]">
+       class="px-3 py-1 bg-white border-2 border-[#0C0C0C] shadow-[1px_1px_0_#0C0C0C] hover:bg-[#F5F0E8]">
       Next &rarr;
     </a>
   </div>

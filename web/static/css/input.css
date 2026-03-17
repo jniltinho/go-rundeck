@@ -10,9 +10,9 @@
   --font-display: "IBM Plex Mono", "JetBrains Mono", monospace;
   --font-body:    "Inter", "DM Sans", sans-serif;
 
-  --shadow-brutal-sm: 2px 2px 0 var(--color-border);
-  --shadow-brutal-md: 4px 4px 0 var(--color-border);
-  --shadow-brutal-lg: 6px 6px 0 var(--color-border);
+  --shadow-brutal-sm: 1px 1px 0 var(--color-border);
+  --shadow-brutal-md: 2px 2px 0 var(--color-border);
+  --shadow-brutal-lg: 3px 3px 0 var(--color-border);
 
   --radius: 0;
   --radius-sm: 0;

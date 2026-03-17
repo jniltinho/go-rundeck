@@ -6,7 +6,7 @@ import (
 	"go-rundeck/internal/middleware"
 	"go-rundeck/internal/model"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"gorm.io/gorm"
 )
 
@@ -21,7 +21,7 @@ func NewScheduleHandler(db *gorm.DB) *ScheduleHandler {
 }
 
 // ListByJob returns schedules for a specific job as JSON.
-func (h *ScheduleHandler) ListByJob(c echo.Context) error {
+func (h *ScheduleHandler) ListByJob(c *echo.Context) error {
 	jobID, err := parseID(c, "jid")
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid job id")
@@ -34,7 +34,7 @@ func (h *ScheduleHandler) ListByJob(c echo.Context) error {
 }
 
 // Create creates a schedule for a job.
-func (h *ScheduleHandler) Create(c echo.Context) error {
+func (h *ScheduleHandler) Create(c *echo.Context) error {
 	jobID, err := parseID(c, "jid")
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid job id")
@@ -55,7 +55,7 @@ func (h *ScheduleHandler) Create(c echo.Context) error {
 }
 
 // Delete removes a schedule.
-func (h *ScheduleHandler) Delete(c echo.Context) error {
+func (h *ScheduleHandler) Delete(c *echo.Context) error {
 	id, err := parseID(c, "sid")
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid schedule id")

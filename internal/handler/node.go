@@ -9,7 +9,7 @@ import (
 	"go-rundeck/internal/repository"
 	"go-rundeck/internal/service"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 // NodeHandler handles node CRUD routes.
@@ -29,7 +29,7 @@ func NewNodeHandler(nodeRepo *repository.NodeRepository, projectSvc *service.Pro
 }
 
 // List renders the node list for a project.
-func (h *NodeHandler) List(c echo.Context) error {
+func (h *NodeHandler) List(c *echo.Context) error {
 	projectID, err := parseID(c, "id")
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid project id")
@@ -52,7 +52,7 @@ func (h *NodeHandler) List(c echo.Context) error {
 }
 
 // Show renders a single node detail.
-func (h *NodeHandler) Show(c echo.Context) error {
+func (h *NodeHandler) Show(c *echo.Context) error {
 	nodeID, err := parseID(c, "nid")
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid node id")
@@ -70,7 +70,7 @@ func (h *NodeHandler) Show(c echo.Context) error {
 }
 
 // Create handles node creation form.
-func (h *NodeHandler) Create(c echo.Context) error {
+func (h *NodeHandler) Create(c *echo.Context) error {
 	projectID, err := parseID(c, "id")
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid project id")
@@ -101,7 +101,7 @@ func (h *NodeHandler) Create(c echo.Context) error {
 }
 
 // Update handles node update form.
-func (h *NodeHandler) Update(c echo.Context) error {
+func (h *NodeHandler) Update(c *echo.Context) error {
 	nodeID, err := parseID(c, "nid")
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid node id")
@@ -135,7 +135,7 @@ func (h *NodeHandler) Update(c echo.Context) error {
 }
 
 // Delete soft-deletes a node.
-func (h *NodeHandler) Delete(c echo.Context) error {
+func (h *NodeHandler) Delete(c *echo.Context) error {
 	nodeID, err := parseID(c, "nid")
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid node id")

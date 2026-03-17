@@ -7,7 +7,7 @@ import (
 	"go-rundeck/internal/repository"
 	"go-rundeck/internal/service"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 // DashboardHandler handles the main dashboard.
@@ -37,7 +37,7 @@ func NewDashboardHandler(
 }
 
 // Index renders the dashboard.
-func (h *DashboardHandler) Index(c echo.Context) error {
+func (h *DashboardHandler) Index(c *echo.Context) error {
 	projectCount, _ := h.projectSvc.Count()
 	runningCount, _ := h.execSvc.CountRunning()
 	recentActivity, _ := h.execSvc.RecentActivity(10)

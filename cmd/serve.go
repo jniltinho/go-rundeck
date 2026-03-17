@@ -3,10 +3,11 @@ package cmd
 import (
 	"embed"
 	"fmt"
-	"log"
+	"log/slog"
 
 	"go-rundeck/config"
 	"go-rundeck/internal/database"
+	"go-rundeck/internal/logger"
 	"go-rundeck/internal/router"
 
 	"github.com/spf13/cobra"
@@ -40,12 +41,19 @@ func runServe(cmd *cobra.Command, args []string) error {
 		return fmt.Errorf("load config: %w", err)
 	}
 
+	// Initialize logger
+	logger.Init(cfg)
+
 	db, err := database.Connect(&cfg.Database)
 	if err != nil {
 		return fmt.Errorf("database: %w", err)
 	}
 
-	log.Printf("Starting %s on %s (env=%s)", cfg.App.Name, cfg.App.Addr(), cfg.App.Env)
+	slog.Info("Starting server",
+		slog.String("app", cfg.App.Name),
+		slog.String("addr", cfg.App.Addr()),
+		slog.String("env", cfg.App.Env),
+	)
 
 	e := router.Setup(db, templatesFS, staticFS, cfg.App.Secret)
 	return e.Start(cfg.App.Addr())

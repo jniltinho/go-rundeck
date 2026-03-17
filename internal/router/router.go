@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"io"
 	"io/fs"
+	"log/slog"
 	"net/http"
 	"path"
 	"strings"
@@ -15,9 +16,9 @@ import (
 	"go-rundeck/internal/service"
 
 	"github.com/gorilla/sessions"
-	echomw "github.com/labstack/echo/v4/middleware"
+	echomw "github.com/labstack/echo/v5/middleware"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"gorm.io/gorm"
 )
 
@@ -27,7 +28,7 @@ type TemplateRenderer struct {
 }
 
 // Render writes the named template to w.
-func (t *TemplateRenderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
+func (t *TemplateRenderer) Render(c *echo.Context, w io.Writer, name string, data interface{}) error {
 	return t.templates.ExecuteTemplate(w, name, data)
 }
 
@@ -39,7 +40,7 @@ func Setup(
 	secret string,
 ) *echo.Echo {
 	e := echo.New()
-	e.HideBanner = true
+	e.Logger = slog.Default()
 
 	// ── Template renderer ────────────────────────────────────────────────────
 	tmpl := parseTemplates(templatesFS)

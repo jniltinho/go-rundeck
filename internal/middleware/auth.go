@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/sessions"
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 const (
@@ -19,7 +19,7 @@ var SessionStore sessions.Store
 
 // RequireAuth is an Echo middleware that enforces a valid session.
 func RequireAuth(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
+	return func(c *echo.Context) error {
 		session, err := SessionStore.Get(c.Request(), SessionName)
 		if err != nil {
 			return c.Redirect(http.StatusSeeOther, "/login")
@@ -40,7 +40,7 @@ func RequireAuth(next echo.HandlerFunc) echo.HandlerFunc {
 
 // RequireAdmin enforces that the logged-in user has the admin role.
 func RequireAdmin(next echo.HandlerFunc) echo.HandlerFunc {
-	return func(c echo.Context) error {
+	return func(c *echo.Context) error {
 		role, _ := c.Get(SessionRole).(string)
 		if role != "admin" {
 			return echo.NewHTTPError(http.StatusForbidden, "admin access required")

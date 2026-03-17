@@ -6,7 +6,7 @@ import (
 	"go-rundeck/internal/middleware"
 	"go-rundeck/internal/model"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -22,7 +22,7 @@ func NewAuthHandler(db *gorm.DB) *AuthHandler {
 }
 
 // ShowLogin renders the login page.
-func (h *AuthHandler) ShowLogin(c echo.Context) error {
+func (h *AuthHandler) ShowLogin(c *echo.Context) error {
 	return c.Render(http.StatusOK, "auth/login.html", map[string]interface{}{
 		"Title": "Login",
 		"Error": "",
@@ -30,7 +30,7 @@ func (h *AuthHandler) ShowLogin(c echo.Context) error {
 }
 
 // Login handles form submission and creates a session.
-func (h *AuthHandler) Login(c echo.Context) error {
+func (h *AuthHandler) Login(c *echo.Context) error {
 	username := c.FormValue("username")
 	password := c.FormValue("password")
 
@@ -61,7 +61,7 @@ func (h *AuthHandler) Login(c echo.Context) error {
 }
 
 // Logout destroys the session.
-func (h *AuthHandler) Logout(c echo.Context) error {
+func (h *AuthHandler) Logout(c *echo.Context) error {
 	session, _ := middleware.SessionStore.Get(c.Request(), middleware.SessionName)
 	session.Options.MaxAge = -1
 	_ = session.Save(c.Request(), c.Response())

@@ -8,7 +8,7 @@ import (
 	"go-rundeck/internal/model"
 	"go-rundeck/internal/service"
 
-	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v5"
 )
 
 // JobHandler handles job CRUD and run routes.
@@ -23,7 +23,7 @@ func NewJobHandler(jobSvc *service.JobService, projectSvc *service.ProjectServic
 }
 
 // List renders the job list for a project.
-func (h *JobHandler) List(c echo.Context) error {
+func (h *JobHandler) List(c *echo.Context) error {
 	projectID, err := parseID(c, "id")
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid project id")
@@ -46,7 +46,7 @@ func (h *JobHandler) List(c echo.Context) error {
 }
 
 // ShowCreate renders the job creation form.
-func (h *JobHandler) ShowCreate(c echo.Context) error {
+func (h *JobHandler) ShowCreate(c *echo.Context) error {
 	projectID, err := parseID(c, "id")
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid project id")
@@ -64,7 +64,7 @@ func (h *JobHandler) ShowCreate(c echo.Context) error {
 }
 
 // Show renders a job detail page.
-func (h *JobHandler) Show(c echo.Context) error {
+func (h *JobHandler) Show(c *echo.Context) error {
 	jobID, err := parseID(c, "jid")
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid job id")
@@ -82,7 +82,7 @@ func (h *JobHandler) Show(c echo.Context) error {
 }
 
 // Create handles the job creation form submission.
-func (h *JobHandler) Create(c echo.Context) error {
+func (h *JobHandler) Create(c *echo.Context) error {
 	projectID, err := parseID(c, "id")
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid project id")
@@ -119,7 +119,7 @@ func (h *JobHandler) Create(c echo.Context) error {
 }
 
 // Update handles job update form.
-func (h *JobHandler) Update(c echo.Context) error {
+func (h *JobHandler) Update(c *echo.Context) error {
 	jobID, err := parseID(c, "jid")
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid job id")
@@ -151,7 +151,7 @@ func (h *JobHandler) Update(c echo.Context) error {
 }
 
 // Delete soft-deletes a job.
-func (h *JobHandler) Delete(c echo.Context) error {
+func (h *JobHandler) Delete(c *echo.Context) error {
 	jobID, err := parseID(c, "jid")
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid job id")
@@ -163,7 +163,7 @@ func (h *JobHandler) Delete(c echo.Context) error {
 }
 
 // Run triggers a job execution.
-func (h *JobHandler) Run(c echo.Context) error {
+func (h *JobHandler) Run(c *echo.Context) error {
 	jobID, err := parseID(c, "jid")
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "invalid job id")
