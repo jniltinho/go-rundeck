@@ -1,0 +1,29 @@
+[app]
+name    = "Go-Rundeck"
+env     = "development"       # development | production
+port    = 8080
+secret  = "CHANGE_ME_SECRET_32CHARS_MINIMUM!"
+debug   = true
+
+[database]
+host     = "localhost"
+port     = 3306
+user     = "rundeck"
+password = "rundeck_pass"
+name     = "gorundeck"
+charset  = "utf8mb4"
+
+[ssh]
+default_user       = "deploy"
+default_port       = 22
+connect_timeout    = 10      # in seconds
+key_storage_path   = "./keys"
+
+[scheduler]
+enabled            = true
+check_interval     = 30      # in seconds
+
+[log]
+level  = "info"      # debug | info | warn | error
+format = "json"      # json | text
+output = "stdout"    # stdout | file path (e.g., /var/log/gorundeck.log)

@@ -1,0 +1,138 @@
+{{template "layout/base.html" .}}
+
+{{define "content"}}
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <p class="text-xs font-mono text-gray-500">
+        <a href="/projects" class="hover:text-[#FF5C00]">projects</a> /
+        <a href="/projects/{{.Project.ID}}" class="hover:text-[#FF5C00]">{{.Project.Name}}</a> / nodes
+      </p>
+      <h2 class="text-2xl font-bold font-mono mt-1">Nodes</h2>
+    </div>
+    <button onclick="document.getElementById('modal-add').classList.remove('hidden')"
+            class="px-4 py-2 bg-[#FF5C00] border-2 border-[#0C0C0C] text-white font-mono font-bold text-sm shadow-[4px_4px_0_#0C0C0C] hover:shadow-[6px_6px_0_#0C0C0C] transition-all">
+      + Add Node
+    </button>
+  </div>
+
+  <div class="bg-white border-4 border-[#0C0C0C] shadow-[6px_6px_0_#0C0C0C] overflow-x-auto">
+    <table class="w-full text-sm font-mono">
+      <thead>
+        <tr class="bg-[#0C0C0C] text-white">
+          <th class="text-left px-4 py-3 text-xs uppercase tracking-wider">Name</th>
+          <th class="text-left px-4 py-3 text-xs uppercase tracking-wider">Hostname</th>
+          <th class="text-left px-4 py-3 text-xs uppercase tracking-wider">SSH</th>
+          <th class="text-left px-4 py-3 text-xs uppercase tracking-wider">Auth</th>
+          <th class="text-left px-4 py-3 text-xs uppercase tracking-wider">OS</th>
+          <th class="text-left px-4 py-3 text-xs uppercase tracking-wider">Tags</th>
+          <th class="text-left px-4 py-3 text-xs uppercase tracking-wider">Status</th>
+          <th class="px-4 py-3"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Nodes}}
+        <tr class="border-b border-gray-200 hover:bg-[#F5F0E8] transition-colors">
+          <td class="px-4 py-3 font-bold">
+            <a href="/projects/{{$.Project.ID}}/nodes/{{.ID}}" class="hover:text-[#FF5C00]">{{.Name}}</a>
+          </td>
+          <td class="px-4 py-3 text-gray-600">{{.Hostname}}</td>
+          <td class="px-4 py-3 text-gray-600">{{.SSHUser}}@{{.Hostname}}:{{.SSHPort}}</td>
+          <td class="px-4 py-3">
+            <span class="px-2 py-0.5 border border-[#0C0C0C] text-xs font-bold">{{.AuthType}}</span>
+          </td>
+          <td class="px-4 py-3 text-gray-500">{{if .OSFamily}}{{.OSFamily}}{{else}}—{{end}}</td>
+          <td class="px-4 py-3 text-gray-500 text-xs">{{if .Tags}}{{.Tags}}{{else}}—{{end}}</td>
+          <td class="px-4 py-3">
+            {{if .Active}}
+            <span class="px-2 py-0.5 bg-green-100 border border-green-600 text-green-700 text-xs font-bold">UP</span>
+            {{else}}
+            <span class="px-2 py-0.5 bg-red-100 border border-red-600 text-red-600 text-xs font-bold">INACTIVE</span>
+            {{end}}
+          </td>
+          <td class="px-4 py-3">
+            <form method="POST" action="/projects/{{$.Project.ID}}/nodes/{{.ID}}/delete"
+                  onsubmit="return confirm('Delete node {{.Name}}?')">
+              <button type="submit" class="text-red-500 hover:text-red-700 font-mono text-xs">[del]</button>
+            </form>
+          </td>
+        </tr>
+        {{else}}
+        <tr>
+          <td colspan="8" class="px-4 py-8 text-center text-gray-400 font-mono">No nodes yet. Add one above.</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Add Node Modal -->
+<div id="modal-add" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+  <div class="bg-[#F5F0E8] border-4 border-[#0C0C0C] shadow-[8px_8px_0_#FF5C00] w-full max-w-lg p-6 max-h-screen overflow-y-auto">
+    <div class="flex items-center justify-between mb-4 border-b-4 border-[#0C0C0C] pb-3">
+      <h3 class="font-bold font-mono text-lg">Add Node</h3>
+      <button onclick="document.getElementById('modal-add').classList.add('hidden')"
+              class="font-mono text-xl font-bold hover:text-[#FF5C00]">&times;</button>
+    </div>
+    <form method="POST" action="/projects/{{.Project.ID}}/nodes" class="space-y-3">
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-xs font-mono font-bold uppercase tracking-widest mb-1">Name *</label>
+          <input type="text" name="name" required
+                 class="w-full px-3 py-2 bg-white border-2 border-[#0C0C0C] font-mono text-sm focus:outline-none focus:border-[#FF5C00]">
+        </div>
+        <div>
+          <label class="block text-xs font-mono font-bold uppercase tracking-widest mb-1">Hostname *</label>
+          <input type="text" name="hostname" required
+                 class="w-full px-3 py-2 bg-white border-2 border-[#0C0C0C] font-mono text-sm focus:outline-none focus:border-[#FF5C00]">
+        </div>
+        <div>
+          <label class="block text-xs font-mono font-bold uppercase tracking-widest mb-1">SSH User *</label>
+          <input type="text" name="ssh_user" required value="deploy"
+                 class="w-full px-3 py-2 bg-white border-2 border-[#0C0C0C] font-mono text-sm focus:outline-none focus:border-[#FF5C00]">
+        </div>
+        <div>
+          <label class="block text-xs font-mono font-bold uppercase tracking-widest mb-1">SSH Port</label>
+          <input type="number" name="ssh_port" value="22"
+                 class="w-full px-3 py-2 bg-white border-2 border-[#0C0C0C] font-mono text-sm focus:outline-none focus:border-[#FF5C00]">
+        </div>
+        <div>
+          <label class="block text-xs font-mono font-bold uppercase tracking-widest mb-1">Auth Type</label>
+          <select name="auth_type"
+                  class="w-full px-3 py-2 bg-white border-2 border-[#0C0C0C] font-mono text-sm focus:outline-none focus:border-[#FF5C00]">
+            <option value="key">SSH Key</option>
+            <option value="password">Password</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-mono font-bold uppercase tracking-widest mb-1">OS Family</label>
+          <input type="text" name="os_family" placeholder="linux"
+                 class="w-full px-3 py-2 bg-white border-2 border-[#0C0C0C] font-mono text-sm focus:outline-none focus:border-[#FF5C00]">
+        </div>
+      </div>
+      <div>
+        <label class="block text-xs font-mono font-bold uppercase tracking-widest mb-1">Tags</label>
+        <input type="text" name="tags" placeholder="web,prod"
+               class="w-full px-3 py-2 bg-white border-2 border-[#0C0C0C] font-mono text-sm focus:outline-none focus:border-[#FF5C00]">
+      </div>
+      <div>
+        <label class="block text-xs font-mono font-bold uppercase tracking-widest mb-1">Description</label>
+        <textarea name="description" rows="2"
+                  class="w-full px-3 py-2 bg-white border-2 border-[#0C0C0C] font-mono text-sm focus:outline-none focus:border-[#FF5C00]"></textarea>
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="submit"
+                class="flex-1 py-2 bg-[#FF5C00] border-2 border-[#0C0C0C] text-white font-mono font-bold text-sm shadow-[4px_4px_0_#0C0C0C]">
+          Add Node
+        </button>
+        <button type="button"
+                onclick="document.getElementById('modal-add').classList.add('hidden')"
+                class="flex-1 py-2 bg-white border-2 border-[#0C0C0C] font-mono font-bold text-sm shadow-[4px_4px_0_#0C0C0C]">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{{end}}

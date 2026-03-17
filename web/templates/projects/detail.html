@@ -1,0 +1,72 @@
+{{template "layout/base.html" .}}
+
+{{define "content"}}
+<div class="space-y-6">
+  <!-- Breadcrumb & Header -->
+  <div class="flex items-start justify-between">
+    <div>
+      <p class="text-xs font-mono text-gray-500"><a href="/projects" class="hover:text-[#FF5C00]">projects</a> / {{.Project.Name}}</p>
+      <h2 class="text-2xl font-bold font-mono mt-1">{{.Project.Name}}</h2>
+      <p class="text-sm text-gray-500 font-mono mt-1">{{.Project.Description}}</p>
+    </div>
+    <div class="flex gap-2">
+      <a href="/projects/{{.Project.ID}}/jobs/new"
+         class="px-4 py-2 bg-[#FF5C00] border-2 border-[#0C0C0C] text-white font-mono font-bold text-sm shadow-[4px_4px_0_#0C0C0C] hover:shadow-[6px_6px_0_#0C0C0C] transition-all">
+        + New Job
+      </a>
+    </div>
+  </div>
+
+  <!-- Quick Links -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+    <a href="/projects/{{.Project.ID}}/nodes"
+       class="bg-white border-4 border-[#0C0C0C] shadow-[4px_4px_0_#0C0C0C] p-4 text-center hover:shadow-[6px_6px_0_#FF5C00] transition-all">
+      <p class="font-mono text-2xl font-bold text-[#FF5C00]">&#9632;</p>
+      <p class="font-mono text-sm font-bold mt-1">Nodes</p>
+    </a>
+    <a href="/projects/{{.Project.ID}}/jobs"
+       class="bg-white border-4 border-[#0C0C0C] shadow-[4px_4px_0_#0C0C0C] p-4 text-center hover:shadow-[6px_6px_0_#FF5C00] transition-all">
+      <p class="font-mono text-2xl font-bold text-[#FF5C00]">&#9654;</p>
+      <p class="font-mono text-sm font-bold mt-1">Jobs</p>
+    </a>
+    <a href="/projects/{{.Project.ID}}/executions"
+       class="bg-white border-4 border-[#0C0C0C] shadow-[4px_4px_0_#0C0C0C] p-4 text-center hover:shadow-[6px_6px_0_#FF5C00] transition-all">
+      <p class="font-mono text-2xl font-bold text-[#FF5C00]">&#9776;</p>
+      <p class="font-mono text-sm font-bold mt-1">Executions</p>
+    </a>
+    <button onclick="document.getElementById('modal-delete').classList.remove('hidden')"
+            class="bg-white border-4 border-[#0C0C0C] shadow-[4px_4px_0_red] p-4 text-center hover:bg-red-50 transition-all">
+      <p class="font-mono text-2xl font-bold text-red-500">&#128465;</p>
+      <p class="font-mono text-sm font-bold mt-1 text-red-600">Delete</p>
+    </button>
+  </div>
+
+  <!-- Tags -->
+  {{if .Project.Tags}}
+  <div class="bg-white border-2 border-[#0C0C0C] p-4 shadow-[4px_4px_0_#0C0C0C]">
+    <p class="text-xs font-mono font-bold uppercase tracking-widest text-gray-500 mb-2">Tags</p>
+    <p class="font-mono text-sm">{{.Project.Tags}}</p>
+  </div>
+  {{end}}
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="modal-delete" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+  <div class="bg-[#F5F0E8] border-4 border-[#0C0C0C] shadow-[8px_8px_0_red] w-full max-w-sm p-6 text-center">
+    <p class="font-mono font-bold text-lg mb-2">Delete Project?</p>
+    <p class="font-mono text-sm text-gray-600 mb-6">This action cannot be undone.</p>
+    <div class="flex gap-3">
+      <form method="POST" action="/projects/{{.Project.ID}}/delete" class="flex-1">
+        <button type="submit"
+                class="w-full py-2 bg-red-600 border-2 border-[#0C0C0C] text-white font-mono font-bold text-sm shadow-[4px_4px_0_#0C0C0C]">
+          Delete
+        </button>
+      </form>
+      <button onclick="document.getElementById('modal-delete').classList.add('hidden')"
+              class="flex-1 py-2 bg-white border-2 border-[#0C0C0C] font-mono font-bold text-sm shadow-[4px_4px_0_#0C0C0C]">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
+{{end}}

@@ -1,0 +1,82 @@
+{{template "layout/base.html" .}}
+
+{{define "content"}}
+<div class="space-y-6">
+  <div class="flex items-start justify-between">
+    <div>
+      <p class="text-xs font-mono text-gray-500">
+        <a href="/projects" class="hover:text-[#FF5C00]">projects</a> /
+        <a href="/projects/{{.Job.ProjectID}}" class="hover:text-[#FF5C00]">{{.Job.Project.Name}}</a> /
+        <a href="/projects/{{.Job.ProjectID}}/jobs" class="hover:text-[#FF5C00]">jobs</a> / {{.Job.Name}}
+      </p>
+      <h2 class="text-2xl font-bold font-mono mt-1">{{.Job.Name}}</h2>
+      <p class="text-sm text-gray-500 font-mono mt-1">{{.Job.Description}}</p>
+    </div>
+    <form method="POST" action="/projects/{{.Job.ProjectID}}/jobs/{{.Job.ID}}/run">
+      <button type="submit"
+              class="px-6 py-3 bg-[#FF5C00] border-2 border-[#0C0C0C] text-white font-mono font-bold text-sm shadow-[4px_4px_0_#0C0C0C] hover:shadow-[6px_6px_0_#0C0C0C] transition-all">
+        &#9654; Run Now
+      </button>
+    </form>
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- Job Config -->
+    <div class="bg-white border-4 border-[#0C0C0C] shadow-[6px_6px_0_#0C0C0C] p-6">
+      <h3 class="font-mono font-bold text-sm uppercase tracking-widest border-b-2 border-[#0C0C0C] pb-2 mb-4">Configuration</h3>
+      <div class="space-y-2 font-mono text-sm">
+        <div class="flex justify-between">
+          <span class="text-gray-500">Node Filter</span>
+          <span class="font-bold">{{if .Job.NodeFilter}}{{.Job.NodeFilter}}{{else}}*{{end}}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Strategy</span>
+          <span class="px-2 py-0.5 border border-[#0C0C0C] text-xs font-bold bg-[#F5F0E8]">{{.Job.ExecStrategy}}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">On Error</span>
+          <span class="px-2 py-0.5 border border-[#0C0C0C] text-xs font-bold bg-[#F5F0E8]">{{.Job.OnError}}</span>
+        </div>
+        <div class="flex justify-between">
+          <span class="text-gray-500">Timeout</span>
+          <span class="font-bold">{{.Job.TimeoutSec}}s</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Steps -->
+    <div class="bg-white border-4 border-[#0C0C0C] shadow-[6px_6px_0_#0C0C0C] p-6">
+      <h3 class="font-mono font-bold text-sm uppercase tracking-widest border-b-2 border-[#0C0C0C] pb-2 mb-4">
+        Steps ({{len .Job.Steps}})
+      </h3>
+      {{if .Job.Steps}}
+      <ol class="space-y-2">
+        {{range .Job.Steps}}
+        <li class="border-2 border-[#0C0C0C] p-3 shadow-[2px_2px_0_#0C0C0C] bg-[#F5F0E8]">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-xs font-mono font-bold uppercase text-gray-500">Step {{.StepOrder}} — {{.Type}}</span>
+            {{if .Label}}<span class="text-xs font-bold text-[#FF5C00] font-mono">{{.Label}}</span>{{end}}
+          </div>
+          <pre class="text-xs font-mono bg-[#0C0C0C] text-green-400 p-2 overflow-x-auto">{{.Content}}</pre>
+        </li>
+        {{end}}
+      </ol>
+      {{else}}
+      <p class="text-sm font-mono text-gray-400">No steps defined yet.</p>
+      {{end}}
+    </div>
+  </div>
+
+  <!-- Danger Zone -->
+  <div class="bg-red-50 border-4 border-red-600 shadow-[6px_6px_0_red] p-4">
+    <h3 class="font-mono font-bold text-sm uppercase tracking-widest text-red-600 mb-3">Danger Zone</h3>
+    <form method="POST" action="/projects/{{.Job.ProjectID}}/jobs/{{.Job.ID}}/delete"
+          onsubmit="return confirm('Delete job &quot;{{.Job.Name}}&quot;? This cannot be undone.')">
+      <button type="submit"
+              class="px-4 py-2 bg-red-600 border-2 border-red-800 text-white font-mono font-bold text-sm shadow-[4px_4px_0_red]">
+        Delete Job
+      </button>
+    </form>
+  </div>
+</div>
+{{end}}

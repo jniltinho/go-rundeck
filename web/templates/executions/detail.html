@@ -1,0 +1,90 @@
+{{template "layout/base.html" .}}
+
+{{define "content"}}
+<div class="space-y-6">
+  <div class="flex items-start justify-between">
+    <div>
+      <p class="text-xs font-mono text-gray-500">
+        <a href="/executions/{{.Execution.ID}}" class="hover:text-[#FF5C00]">executions</a> / #{{.Execution.ID}}
+      </p>
+      <h2 class="text-2xl font-bold font-mono mt-1">Execution #{{.Execution.ID}}</h2>
+      <p class="text-sm text-gray-500 font-mono mt-1">Job: <strong>{{.Execution.Job.Name}}</strong></p>
+    </div>
+    <div class="flex gap-2 items-center">
+      {{if eq (printf "%s" .Execution.Status) "running"}}
+      <form method="POST" action="/executions/{{.Execution.ID}}/abort">
+        <button type="submit"
+                class="px-4 py-2 bg-red-600 border-2 border-[#0C0C0C] text-white font-mono font-bold text-sm shadow-[4px_4px_0_#0C0C0C]">
+          &#9632; Abort
+        </button>
+      </form>
+      {{end}}
+    </div>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="bg-white border-4 border-[#0C0C0C] shadow-[6px_6px_0_#0C0C0C] p-4">
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 font-mono text-sm">
+      <div>
+        <p class="text-xs uppercase tracking-widest text-gray-500 mb-1">Status</p>
+        {{if eq (printf "%s" .Execution.Status) "succeeded"}}
+          <span class="px-3 py-1 bg-green-100 border-2 border-green-600 text-green-700 font-bold">SUCCEEDED</span>
+        {{else if eq (printf "%s" .Execution.Status) "running"}}
+          <span class="px-3 py-1 bg-[#FFD600] border-2 border-[#0C0C0C] text-[#0C0C0C] font-bold">RUNNING</span>
+        {{else if eq (printf "%s" .Execution.Status) "failed"}}
+          <span class="px-3 py-1 bg-red-100 border-2 border-red-600 text-red-700 font-bold">FAILED</span>
+        {{else if eq (printf "%s" .Execution.Status) "aborted"}}
+          <span class="px-3 py-1 bg-gray-200 border-2 border-gray-500 text-gray-700 font-bold">ABORTED</span>
+        {{end}}
+      </div>
+      <div>
+        <p class="text-xs uppercase tracking-widest text-gray-500 mb-1">Trigger</p>
+        <p class="font-bold">{{.Execution.TriggerType}}</p>
+      </div>
+      <div>
+        <p class="text-xs uppercase tracking-widest text-gray-500 mb-1">Started</p>
+        <p class="font-bold">{{.Execution.StartedAt.Format "2006-01-02 15:04:05"}}</p>
+      </div>
+      <div>
+        <p class="text-xs uppercase tracking-widest text-gray-500 mb-1">Duration</p>
+        <p class="font-bold">{{if .Execution.DurationSec}}{{printf "%.1fs" .Execution.DurationSec}}{{else}}—{{end}}</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Log Terminal -->
+  <div class="bg-[#0C0C0C] border-4 border-[#0C0C0C] shadow-[6px_6px_0_#FF5C00]">
+    <div class="flex items-center justify-between px-4 py-2 border-b-2 border-gray-800">
+      <div class="flex gap-1.5">
+        <div class="w-3 h-3 rounded-full bg-red-500"></div>
+        <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+        <div class="w-3 h-3 rounded-full bg-green-500"></div>
+      </div>
+      <span class="text-xs font-mono text-gray-400">execution log — #{{.Execution.ID}}</span>
+      <span id="log-status" class="text-xs font-mono text-gray-400">
+        {{if eq (printf "%s" .Execution.Status) "running"}}connecting…{{else}}complete{{end}}
+      </span>
+    </div>
+    <div id="log-output"
+         class="px-4 py-3 h-96 overflow-y-auto font-mono text-xs text-green-400 space-y-0.5">
+      {{range .Logs}}
+      <div class="{{if eq (printf "%s" .LogLevel) "error"}}text-red-400{{else if eq (printf "%s" .LogLevel) "warn"}}text-yellow-400{{else}}text-green-400{{end}}">
+        <span class="text-gray-500">{{.LoggedAt.Format "15:04:05"}}</span>
+        <span class="text-blue-400">[{{.NodeName}}]</span>
+        <span>[{{.LogLevel}}]</span>
+        {{.Message}}
+      </div>
+      {{else}}
+      <div class="text-gray-500">Waiting for log output…</div>
+      {{end}}
+    </div>
+  </div>
+</div>
+{{end}}
+
+{{define "scripts"}}
+<script src="/static/js/execution.js"></script>
+<script>
+  initExecLog({{.Execution.ID}}, "{{.Execution.Status}}");
+</script>
+{{end}}

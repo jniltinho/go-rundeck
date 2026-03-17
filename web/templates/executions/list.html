@@ -1,0 +1,77 @@
+{{template "layout/base.html" .}}
+
+{{define "content"}}
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <p class="text-xs font-mono text-gray-500">
+        <a href="/projects" class="hover:text-[#FF5C00]">projects</a> /
+        <a href="/projects/{{.Project.ID}}" class="hover:text-[#FF5C00]">{{.Project.Name}}</a> / executions
+      </p>
+      <h2 class="text-2xl font-bold font-mono mt-1">Execution History</h2>
+    </div>
+  </div>
+
+  <div class="bg-white border-4 border-[#0C0C0C] shadow-[6px_6px_0_#0C0C0C] overflow-x-auto">
+    <table class="w-full text-sm font-mono">
+      <thead>
+        <tr class="bg-[#0C0C0C] text-white">
+          <th class="text-left px-4 py-3 text-xs uppercase tracking-wider">ID</th>
+          <th class="text-left px-4 py-3 text-xs uppercase tracking-wider">Job</th>
+          <th class="text-left px-4 py-3 text-xs uppercase tracking-wider">Status</th>
+          <th class="text-left px-4 py-3 text-xs uppercase tracking-wider">Trigger</th>
+          <th class="text-left px-4 py-3 text-xs uppercase tracking-wider">Started</th>
+          <th class="text-left px-4 py-3 text-xs uppercase tracking-wider">Duration</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{range .Executions}}
+        <tr class="border-b border-gray-200 hover:bg-[#F5F0E8] transition-colors">
+          <td class="px-4 py-3">
+            <a href="/executions/{{.ID}}" class="text-[#FF5C00] hover:underline font-bold">#{{.ID}}</a>
+          </td>
+          <td class="px-4 py-3 font-medium">{{.Job.Name}}</td>
+          <td class="px-4 py-3">
+            {{if eq (printf "%s" .Status) "succeeded"}}
+              <span class="px-2 py-0.5 bg-green-100 border border-green-600 text-green-700 text-xs font-bold">SUCCEEDED</span>
+            {{else if eq (printf "%s" .Status) "running"}}
+              <span class="px-2 py-0.5 bg-[#FFD600] border border-[#0C0C0C] text-[#0C0C0C] text-xs font-bold">RUNNING</span>
+            {{else if eq (printf "%s" .Status) "failed"}}
+              <span class="px-2 py-0.5 bg-red-100 border border-red-600 text-red-700 text-xs font-bold">FAILED</span>
+            {{else if eq (printf "%s" .Status) "aborted"}}
+              <span class="px-2 py-0.5 bg-gray-200 border border-gray-500 text-gray-700 text-xs font-bold">ABORTED</span>
+            {{else}}
+              <span class="px-2 py-0.5 bg-gray-100 border border-gray-400 text-gray-600 text-xs font-bold">{{.Status}}</span>
+            {{end}}
+          </td>
+          <td class="px-4 py-3 text-gray-500">{{.TriggerType}}</td>
+          <td class="px-4 py-3 text-gray-500">{{.StartedAt.Format "2006-01-02 15:04:05"}}</td>
+          <td class="px-4 py-3 text-gray-500">
+            {{if .DurationSec}}{{printf "%.1f" .DurationSec}}s{{else}}—{{end}}
+          </td>
+        </tr>
+        {{else}}
+        <tr>
+          <td colspan="6" class="px-4 py-8 text-center text-gray-400 font-mono">No executions yet.</td>
+        </tr>
+        {{end}}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="flex gap-2 font-mono text-sm">
+    {{if gt .Page 1}}
+    <a href="?page={{sub .Page 1}}"
+       class="px-3 py-1 bg-white border-2 border-[#0C0C0C] shadow-[2px_2px_0_#0C0C0C] hover:bg-[#F5F0E8]">
+      &larr; Prev
+    </a>
+    {{end}}
+    <span class="px-3 py-1 bg-[#FFD600] border-2 border-[#0C0C0C] font-bold">Page {{.Page}}</span>
+    <a href="?page={{add .Page 1}}"
+       class="px-3 py-1 bg-white border-2 border-[#0C0C0C] shadow-[2px_2px_0_#0C0C0C] hover:bg-[#F5F0E8]">
+      Next &rarr;
+    </a>
+  </div>
+</div>
+{{end}}

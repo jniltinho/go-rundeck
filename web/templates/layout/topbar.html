@@ -1,0 +1,13 @@
+{{define "layout/topbar.html"}}
+<header class="bg-white border-b-4 border-[#0C0C0C] px-6 py-3 flex items-center justify-between shadow-[0_4px_0_#0C0C0C]">
+  <div class="flex items-center gap-4">
+    <h1 class="font-bold text-lg font-mono tracking-tight">{{.Title}}</h1>
+  </div>
+  <div class="flex items-center gap-3">
+    <span class="px-2 py-1 bg-[#FFD600] border-2 border-[#0C0C0C] text-xs font-mono font-bold shadow-[2px_2px_0_#0C0C0C]">
+      {{.Role}}
+    </span>
+    <span class="text-sm font-mono text-gray-600">{{.CurrentUser}}</span>
+  </div>
+</header>
+{{end}}
