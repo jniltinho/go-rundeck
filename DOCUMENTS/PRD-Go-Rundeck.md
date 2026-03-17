@@ -38,7 +38,7 @@
 | **Go** | 1.26 | Main language |
 | **Echo Framework** | v5 | HTTP server, routing, middleware |
 | **GORM** | latest | ORM for persistence |
-| **MySQL** | 8.x | Relational database |
+| **MariaDB** | 10.x+ | Relational database |
 | **Cobra CLI** | latest | CLI for administration and initialization |
 | **Viper / go-toml** | latest | Configuration via `.toml` file |
 | **golang.org/x/crypto/ssh** | latest | SSH connection with remote servers |

@@ -12,14 +12,14 @@
 - **Modern UI**: Neo-brutalist aesthetic with square borders, high contrast, and dynamic interactions powered by Tailwind CSS and jQuery.
 
 ## Tech Stack
-- **Backend:** Go, Echo Framework v5, GORM, MySQL 8.x, Cobra CLI, Viper. 
+- **Backend:** Go, Echo Framework v5, GORM, MariaDB 10.x+, Cobra CLI, Viper. 
 - **Frontend:** Tailwind CSS, HTML Templates, jQuery.
 
 ## Installation & Build
 
 ### Prerequisites
 - Go 1.26 or higher
-- MySQL 8.x
+- MariaDB 10.x+
 - Tailwind CSS CLI (for development)
 
 ### Build from Source
@@ -36,7 +36,7 @@ make all
 
 ### Running the Application
 
-1. Create a MySQL database (e.g., `gorundeck`).
+1. Create a MariaDB database (e.g., `gorundeck`).
 2. Copy the example configuration file:
    ```bash
    cp config.toml.example config.toml

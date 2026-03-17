@@ -8,7 +8,7 @@ description: Guidelines, tech stack, and architectural rules for developing the 
 This skill contains all the core rules, architectural guidelines, and styling instructions for the **Go-Rundeck** project, as defined in its Product Requirements Document (`DOCUMENTS/PRD-Go-Rundeck.md`).
 
 ## 1. Core Tech Stack
-- **Backend**: Go (1.26), Echo Framework v5, GORM, MySQL 8.x, Cobra CLI, Viper.
+- **Backend**: Go (1.26), Echo Framework v5, GORM, MariaDB 10.x+, Cobra CLI, Viper.
 - **Frontend**: Tailwind CSS 4.2.0 (standalone CLI, no Node/npm), jQuery 4.0.0, jQuery Toast Plugin, Go `html/template`.
 - **Key Feature**: Zero dependencies. All web assets (`web/templates`, `web/static`) are embedded into the Go binary via `embed.go`.
 
