@@ -46,7 +46,11 @@ make all
    ```bash
    ./bin/gorundeck migrate
    ```
-5. Start the server:
+5. Create an initial admin user:
+   ```bash
+   ./bin/gorundeck admin --add-user admin@example.com:password123
+   ```
+6. Start the server:
    ```bash
    ./bin/gorundeck serve
    ```
