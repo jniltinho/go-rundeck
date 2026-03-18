@@ -50,7 +50,22 @@ EXIT;
 
 ---
 
-## 4. Build and Install Go-Rundeck
+## 4. Get the Application
+
+You can clone the original repository or directly download the latest compiled executable from the [Releases page](https://github.com/jniltinho/go-rundeck/releases).
+
+*Download binary and Repository:*
+
+```bash
+sudo mkdir -p /opt/go-rundeck
+cd /opt/go-rundeck
+# Download the latest release:
+TAG=$(curl -s https://api.github.com/repos/jniltinho/go-rundeck/releases/latest |grep tag_name|cut -d '"' -f4|tr -d v)
+sudo curl -L -o gorundeck_${TAG}_linux_amd64.tar.gz "https://github.com/jniltinho/go-rundeck/releases/download/v${TAG}/gorundeck_${TAG}_linux_amd64.tar.gz"
+sudo tar -xzvf gorundeck_*.tar.gz
+```
+
+*Or build from source:*
 
 ```bash
 # Clone the repository
@@ -65,11 +80,14 @@ sudo mv tailwindcss-linux-x64 /usr/local/bin/tailwindcss
 # Build the binary (CSS + Go)
 make all
 
-# Create the installation directory
+# Install
 sudo mkdir -p /opt/go-rundeck
-
-# Copy the binary and config
 sudo cp bin/gorundeck /opt/go-rundeck/
+```
+
+Copy the example config:
+
+```bash
 sudo cp config.toml.example /opt/go-rundeck/config.toml
 ```
 
