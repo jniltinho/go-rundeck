@@ -181,6 +181,11 @@ func (s *ExecutionService) Unsubscribe(executionID uint, ch chan LogEvent) {
 	close(ch)
 }
 
+// Delete removes an execution record.
+func (s *ExecutionService) Delete(id uint) error {
+	return s.repo.Delete(id)
+}
+
 // RecentActivity returns the most recent executions.
 func (s *ExecutionService) RecentActivity(limit int) ([]model.Execution, error) {
 	return s.repo.RecentActivity(limit)

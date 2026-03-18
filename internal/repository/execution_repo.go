@@ -98,6 +98,11 @@ func (r *ExecutionRepository) CountFailedLastDay() (int64, error) {
 	return count, err
 }
 
+// Delete removes an execution and its associated logs and options (cascade).
+func (r *ExecutionRepository) Delete(id uint) error {
+	return r.db.Delete(&model.Execution{}, id).Error
+}
+
 // RecentActivity returns the most recent executions across all projects.
 func (r *ExecutionRepository) RecentActivity(limit int) ([]model.Execution, error) {
 	var execs []model.Execution

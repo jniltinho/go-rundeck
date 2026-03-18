@@ -136,6 +136,7 @@ func Setup(
 	protected.GET("/executions/:eid", execH.Show)
 	protected.GET("/executions/:eid/log", execH.StreamLogs)
 	protected.POST("/executions/:eid/abort", execH.Abort)
+	protected.POST("/executions/:eid/delete", execH.Delete)
 
 	// Users (Admin Only)
 	adminGrp := e.Group("/users", mw.RequireAuth, mw.RequireAdmin)

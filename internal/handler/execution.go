@@ -125,6 +125,23 @@ func (h *ExecutionHandler) StreamLogs(c *echo.Context) error {
 	}
 }
 
+// Delete removes an execution record.
+func (h *ExecutionHandler) Delete(c *echo.Context) error {
+	execID, err := parseID(c, "eid")
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid execution id")
+	}
+	exec, err := h.execSvc.GetByID(execID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNotFound, "execution not found")
+	}
+	projectID := exec.ProjectID
+	if err := h.execSvc.Delete(execID); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	return c.Redirect(http.StatusSeeOther, fmt.Sprintf("/projects/%d/executions", projectID))
+}
+
 // Abort stops a running execution.
 func (h *ExecutionHandler) Abort(c *echo.Context) error {
 	execID, err := parseID(c, "eid")

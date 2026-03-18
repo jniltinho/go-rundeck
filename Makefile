@@ -26,6 +26,9 @@ dev:
 migrate:
 	./$(BIN) migrate
 
+run:
+	./$(BIN) serve
+
 test:
 	go test ./...
 
