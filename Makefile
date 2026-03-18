@@ -5,7 +5,7 @@ BUILD_TIME := $(shell date -u +"%Y-%m-%dT%H:%M:%SZ")
 GIT_COMMIT := $(shell git rev-parse --short HEAD 2>/dev/null || echo "unknown")
 LDFLAGS    := -ldflags "-s -w -X main.Version=$(VERSION) -X main.BuildTime=$(BUILD_TIME) -X main.GitCommit=$(GIT_COMMIT)"
 
-.PHONY: all dev build css css-watch migrate test lint clean
+.PHONY: all dev build css css-watch migrate test lint clean certs
 
 all: css build
 
@@ -34,6 +34,13 @@ test:
 
 lint:
 	golangci-lint run
+
+certs:
+	@echo "Generating SSL certificates..."
+	mkdir -p ssl
+	openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
+		-keyout ssl/server.key -out ssl/server.crt \
+		-subj "/C=BR/ST=SP/L=Sao Paulo/O=Development/CN=localhost"
 
 clean:
 	rm -rf bin/

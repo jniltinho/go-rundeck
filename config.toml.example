@@ -1,9 +1,15 @@
-[app]
-name    = "Go-Rundeck"
-env     = "development"       # development | production
-port    = 8080
-secret  = "CHANGE_ME_SECRET_32CHARS_MINIMUM!"
-debug   = true
+[server]
+name           = "Go-Rundeck"
+env            = "development"      # development | production
+port           = 8080
+debug          = true
+ssl_enable     = false
+# ssl_cert = "ssl/server.crt"
+# ssl_key  = "ssl/server.key"
+# If both cert and key are provided, SSL will be enabled automatically
+# Generate a random 64-character hex string for production use, e.g.: openssl rand -hex 32
+session_secret  = "CHANGE_ME_SECRET_64CHARS_HEX_STRING_HERE"
+session_timeout = 60 # inactivity timeout in minutes
 
 [database]
 host     = "localhost"

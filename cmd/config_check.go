@@ -28,9 +28,9 @@ func runConfigCheck(cmd *cobra.Command, args []string) error {
 	}
 
 	fmt.Println("Config loaded successfully:")
-	fmt.Printf("  App Name:  %s\n", cfg.App.Name)
-	fmt.Printf("  Env:       %s\n", cfg.App.Env)
-	fmt.Printf("  Port:      %d\n", cfg.App.Port)
+	fmt.Printf("  App Name:  %s\n", cfg.Server.Name)
+	fmt.Printf("  Env:       %s\n", cfg.Server.Env)
+	fmt.Printf("  Port:      %d\n", cfg.Server.Port)
 	fmt.Printf("  DB Host:   %s:%d\n", cfg.Database.Host, cfg.Database.Port)
 	fmt.Printf("  DB Name:   %s\n", cfg.Database.Name)
 

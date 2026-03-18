@@ -39,6 +39,8 @@ func Setup(
 	templatesFS embed.FS,
 	staticFS embed.FS,
 	secret string,
+	sessionTimeout int,
+	sslEnabled bool,
 ) *echo.Echo {
 	e := echo.New()
 	e.Logger = slog.Default()
@@ -51,10 +53,13 @@ func Setup(
 	store := sessions.NewCookieStore([]byte(secret))
 	store.Options = &sessions.Options{
 		Path:     "/",
-		MaxAge:   86400 * 7,
+		MaxAge:   sessionTimeout * 60,
 		HttpOnly: true,
+		Secure:   sslEnabled,
+		SameSite: http.SameSiteLaxMode,
 	}
 	mw.SessionStore = store
+	mw.SessionTimeout = sessionTimeout
 
 	// ── Global middleware ─────────────────────────────────────────────────────
 	e.Use(echomw.Recover())

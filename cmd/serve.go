@@ -4,6 +4,7 @@ import (
 	"embed"
 	"fmt"
 	"log/slog"
+	"net/http"
 
 	"go-rundeck/config"
 	"go-rundeck/internal/database"
@@ -50,11 +51,26 @@ func runServe(cmd *cobra.Command, args []string) error {
 	}
 
 	slog.Info("Starting server",
-		slog.String("app", cfg.App.Name),
-		slog.String("addr", cfg.App.Addr()),
-		slog.String("env", cfg.App.Env),
+		slog.String("app", cfg.Server.Name),
+		slog.String("addr", cfg.Server.Addr()),
+		slog.String("env", cfg.Server.Env),
 	)
 
-	e := router.Setup(db, templatesFS, staticFS, cfg.App.Secret)
-	return e.Start(cfg.App.Addr())
+	timeout := cfg.Server.SessionTimeout
+	if timeout <= 0 {
+		timeout = 60
+	}
+	e := router.Setup(db, templatesFS, staticFS, cfg.Server.SessionSecret, timeout, cfg.Server.SSLEnabled)
+
+	if cfg.Server.SSLEnabled {
+		if cfg.Server.SSLCert == "" || cfg.Server.SSLKey == "" {
+			slog.Error("SSL enabled but cert or key file not provided")
+			return fmt.Errorf("server.ssl_cert and server.ssl_key must be set when ssl_enable is true")
+		}
+		slog.Info("SSL enabled", "cert", cfg.Server.SSLCert, "key", cfg.Server.SSLKey)
+		server := &http.Server{Addr: cfg.Server.Addr(), Handler: e}
+		return server.ListenAndServeTLS(cfg.Server.SSLCert, cfg.Server.SSLKey)
+	}
+
+	return e.Start(cfg.Server.Addr())
 }

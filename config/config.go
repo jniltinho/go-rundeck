@@ -9,20 +9,24 @@ import (
 
 // Config is the root configuration struct.
 type Config struct {
-	App       AppConfig       `toml:"app"`
+	Server    ServerConfig    `toml:"server"`
 	Database  DatabaseConfig  `toml:"database"`
 	SSH       SSHConfig       `toml:"ssh"`
 	Scheduler SchedulerConfig `toml:"scheduler"`
 	Log       LogConfig       `toml:"log"`
 }
 
-// AppConfig holds application-level settings.
-type AppConfig struct {
-	Name   string `toml:"name"`
-	Env    string `toml:"env"`
-	Port   int    `toml:"port"`
-	Secret string `toml:"secret"`
-	Debug  bool   `toml:"debug"`
+// ServerConfig holds application-level and TLS settings.
+type ServerConfig struct {
+	Name           string `toml:"name"`
+	Env            string `toml:"env"`
+	Port           int    `toml:"port"`
+	SessionSecret  string `toml:"session_secret"`
+	SessionTimeout int    `toml:"session_timeout"` // inactivity timeout in minutes
+	Debug          bool   `toml:"debug"`
+	SSLEnabled     bool   `toml:"ssl_enable"`
+	SSLCert        string `toml:"ssl_cert"`
+	SSLKey         string `toml:"ssl_key"`
 }
 
 // DatabaseConfig holds database connection settings.
@@ -83,16 +87,16 @@ func (d *DatabaseConfig) DSN() string {
 }
 
 // Addr returns the listen address for the Echo server.
-func (a *AppConfig) Addr() string {
-	return fmt.Sprintf(":%d", a.Port)
+func (s *ServerConfig) Addr() string {
+	return fmt.Sprintf(":%d", s.Port)
 }
 
 func validate(cfg *Config) error {
-	if cfg.App.Secret == "" {
-		return fmt.Errorf("app.secret must not be empty")
+	if cfg.Server.SessionSecret == "" {
+		return fmt.Errorf("server.session_secret must not be empty")
 	}
-	if len(cfg.App.Secret) < 32 {
-		return fmt.Errorf("app.secret must be at least 32 characters long")
+	if len(cfg.Server.SessionSecret) < 32 {
+		return fmt.Errorf("server.session_secret must be at least 32 characters long")
 	}
 	if cfg.Database.Host == "" {
 		return fmt.Errorf("database.host must not be empty")
