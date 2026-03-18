@@ -1,6 +1,4 @@
-{{template "layout/base.html" .}}
-
-{{define "content"}}
+{{template "layout/base-open" .}}
 <div class="space-y-6">
   <div class="flex items-start justify-between">
     <div>
@@ -47,7 +45,7 @@
       </div>
       <div>
         <p class="text-xs uppercase tracking-widest text-gray-500 mb-1">Duration</p>
-        <p class="font-bold">{{if .Execution.DurationSec}}{{printf "%.1fs" .Execution.DurationSec}}{{else}}—{{end}}</p>
+        <p class="font-bold">{{fmtDur .Execution.DurationSec}}</p>
       </div>
     </div>
   </div>
@@ -72,7 +70,7 @@
         <span class="text-gray-500">{{.LoggedAt.Format "15:04:05"}}</span>
         <span class="text-blue-400">[{{.NodeName}}]</span>
         <span>[{{.LogLevel}}]</span>
-        {{.Message}}
+        <span class="whitespace-pre-wrap">{{.Message}}</span>
       </div>
       {{else}}
       <div class="text-gray-500">Waiting for log output…</div>
@@ -80,11 +78,8 @@
     </div>
   </div>
 </div>
-{{end}}
-
-{{define "scripts"}}
 <script src="/static/js/execution.js"></script>
 <script>
   initExecLog({{.Execution.ID}}, "{{.Execution.Status}}");
 </script>
-{{end}}
+{{template "layout/base-close" .}}

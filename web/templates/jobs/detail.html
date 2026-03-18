@@ -1,6 +1,4 @@
-{{template "layout/base.html" .}}
-
-{{define "content"}}
+{{template "layout/base-open" .}}
 <div class="space-y-6">
   <div class="flex items-start justify-between">
     <div>
@@ -12,12 +10,21 @@
       <h2 class="text-2xl font-bold font-mono mt-1">{{.Job.Name}}</h2>
       <p class="text-sm text-gray-500 font-mono mt-1">{{.Job.Description}}</p>
     </div>
-    <form method="POST" action="/projects/{{.Job.ProjectID}}/jobs/{{.Job.ID}}/run">
-      <button type="submit"
+    <div class="relative">
+      {{if .Job.Options}}
+      <button type="button" onclick="openRunModal()"
               class="px-6 py-3 bg-[#FF5C00] border-2 border-[#0C0C0C] text-white font-mono font-bold text-sm shadow-[2px_2px_0_#0C0C0C] hover:shadow-[3px_3px_0_#0C0C0C] transition-all">
         &#9654; Run Now
       </button>
-    </form>
+      {{else}}
+      <form method="POST" action="/projects/{{.Job.ProjectID}}/jobs/{{.Job.ID}}/run">
+        <button type="submit"
+                class="px-6 py-3 bg-[#FF5C00] border-2 border-[#0C0C0C] text-white font-mono font-bold text-sm shadow-[2px_2px_0_#0C0C0C] hover:shadow-[3px_3px_0_#0C0C0C] transition-all">
+          &#9654; Run Now
+        </button>
+      </form>
+      {{end}}
+    </div>
   </div>
 
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -44,31 +51,181 @@
       </div>
     </div>
 
+    <!-- Options -->
+    <div class="bg-white border-4 border-[#0C0C0C] shadow-[3px_3px_0_#0C0C0C] p-6 lg:col-span-2">
+      <div class="flex justify-between items-center mb-4 border-b-2 border-[#0C0C0C] pb-2">
+        <h3 class="font-mono font-bold text-sm uppercase tracking-widest">Job Variables (Options)</h3>
+        <button type="button" onclick="editJob()" id="btnEdit" class="text-xs font-mono font-bold text-[#FF5C00] hover:underline">[Edit Definition]</button>
+      </div>
+
+      <div id="viewOptions">
+        {{if .Job.Options}}
+        <table class="w-full text-xs font-mono text-left">
+          <thead class="bg-[#F5F0E8] border-b-2 border-[#0C0C0C]">
+            <tr>
+              <th class="p-2">Name</th>
+              <th class="p-2">Label</th>
+              <th class="p-2">Type</th>
+              <th class="p-2">Req</th>
+              <th class="p-2">Default</th>
+            </tr>
+          </thead>
+          <tbody>
+            {{range .Job.Options}}
+            <tr class="border-b border-gray-200">
+              <td class="p-2 font-bold">{{.Name}}</td>
+              <td class="p-2">{{if .Label}}{{.Label}}{{else}}—{{end}}</td>
+              <td class="p-2">{{.OptionType}}</td>
+              <td class="p-2">{{if .Required}}Y{{else}}N{{end}}</td>
+              <td class="p-2">{{if .DefaultVal}}{{.DefaultVal}}{{else}}—{{end}}</td>
+            </tr>
+            {{end}}
+          </tbody>
+        </table>
+        {{else}}
+        <p class="text-xs font-mono text-gray-400">No variables defined.</p>
+        {{end}}
+      </div>
+    </div>
+
     <!-- Steps -->
-    <div class="bg-white border-4 border-[#0C0C0C] shadow-[3px_3px_0_#0C0C0C] p-6">
+    <div class="bg-white border-4 border-[#0C0C0C] shadow-[3px_3px_0_#0C0C0C] p-6 lg:col-span-2">
       <h3 class="font-mono font-bold text-sm uppercase tracking-widest border-b-2 border-[#0C0C0C] pb-2 mb-4">
         Steps ({{len .Job.Steps}})
       </h3>
-      {{if .Job.Steps}}
-      <ol class="space-y-2">
-        {{range .Job.Steps}}
-        <li class="border-2 border-[#0C0C0C] p-3 shadow-[1px_1px_0_#0C0C0C] bg-[#F5F0E8]">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-xs font-mono font-bold uppercase text-gray-500">Step {{.StepOrder}} — {{.Type}}</span>
-            {{if .Label}}<span class="text-xs font-bold text-[#FF5C00] font-mono">{{.Label}}</span>{{end}}
-          </div>
-          <pre class="text-xs font-mono bg-[#0C0C0C] text-green-400 p-2 overflow-x-auto">{{.Content}}</pre>
-        </li>
+      <div id="viewSteps">
+        {{if .Job.Steps}}
+        <ol class="space-y-3">
+          {{range .Job.Steps}}
+          <li class="border-2 border-[#0C0C0C] p-3 shadow-[2px_2px_0_#0C0C0C] bg-[#F5F0E8] step-view-item"
+              data-type="{{.Type}}" data-label="{{.Label}}" data-content="{{.Content}}">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-mono font-bold uppercase text-gray-500">Step {{.StepOrder}} — {{.Type}}</span>
+              {{if .Label}}<span class="text-xs font-bold text-[#FF5C00] font-mono">{{.Label}}</span>{{end}}
+            </div>
+            <pre class="text-xs font-mono bg-[#0C0C0C] text-green-400 p-3 overflow-x-auto">{{.Content}}</pre>
+          </li>
+          {{end}}
+        </ol>
+        {{else}}
+        <p class="text-xs font-mono text-gray-400">No steps defined yet.</p>
         {{end}}
-      </ol>
+      </div>
+    </div>
+
+    <!-- Schedules -->
+    <div class="bg-white border-4 border-[#0C0C0C] shadow-[3px_3px_0_#0C0C0C] p-6 lg:col-span-2">
+      <h3 class="font-mono font-bold text-sm uppercase tracking-widest border-b-2 border-[#0C0C0C] pb-2 mb-4">
+        Schedules ({{len .Job.Schedules}})
+      </h3>
+
+      <div class="mb-6">
+        <form method="POST" action="/projects/{{.Job.ProjectID}}/jobs/{{.Job.ID}}/schedules" class="flex gap-2 items-end">
+          <div class="flex-1">
+            <label class="block text-xs font-mono font-bold uppercase tracking-widest mb-1">Add Cron Schedule</label>
+            <input type="text" name="cron_expr" placeholder="*/5 * * * *" required class="w-full p-2 border-2 border-[#0C0C0C] font-mono text-sm focus:outline-none focus:border-[#FF5C00]">
+            <p class="text-[10px] font-mono text-gray-500 mt-1">Format: Min Hour Dom Month Dow (eg. */5 * * * *)</p>
+          </div>
+          <button type="submit" class="px-4 py-2 bg-[#FF5C00] text-white border-2 border-[#0C0C0C] font-mono font-bold text-sm shadow-[2px_2px_0_#0C0C0C] hover:translate-y-px hover:translate-x-px hover:shadow-[1px_1px_0_#0C0C0C] transition-all">
+            + Add
+          </button>
+        </form>
+      </div>
+
+      {{if .Job.Schedules}}
+      <table class="w-full text-xs font-mono text-left bg-[#F5F0E8] border-2 border-[#0C0C0C]">
+        <thead class="border-b-2 border-[#0C0C0C]">
+          <tr>
+            <th class="p-3">Cron Expression</th>
+            <th class="p-3">Status</th>
+            <th class="p-3">Next Run</th>
+            <th class="p-3">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Job.Schedules}}
+          <tr class="border-b border-gray-300">
+            <td class="p-3 font-bold">{{.CronExpr}}</td>
+            <td class="p-3">
+              {{if .Enabled}}
+                <span class="px-2 py-0.5 bg-green-200 text-green-800 border border-green-600 font-bold">ACTIVE</span>
+              {{else}}
+                <span class="px-2 py-0.5 bg-gray-200 text-gray-800 border border-gray-600 font-bold">PAUSED</span>
+              {{end}}
+            </td>
+            <td class="p-3 text-gray-500">
+              {{if .NextRun}}{{.NextRun.Format "2006-01-02 15:04"}}{{else}}—{{end}}
+            </td>
+            <td class="p-3 flex gap-2">
+              <form method="POST" action="/projects/{{$.Job.ProjectID}}/jobs/{{$.Job.ID}}/schedules/{{.ID}}/toggle" class="inline">
+                <button type="submit" class="hover:underline font-bold text-blue-600">{{if .Enabled}}Pause{{else}}Resume{{end}}</button>
+              </form>
+              <span class="text-gray-400">|</span>
+              <form method="POST" action="/projects/{{$.Job.ProjectID}}/jobs/{{$.Job.ID}}/schedules/{{.ID}}/delete" class="inline" onsubmit="return confirm('Delete schedule?')">
+                <button type="submit" class="hover:underline font-bold text-red-600">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
       {{else}}
-      <p class="text-sm font-mono text-gray-400">No steps defined yet.</p>
+      <p class="text-xs font-mono text-gray-400">No schedules defined.</p>
       {{end}}
+    </div>
+
+    <!-- Hidden Edit Form -->
+    <div id="editForm" class="hidden lg:col-span-2 bg-[#F5F0E8] border-4 border-[#FF5C00] p-6">
+      <h3 class="font-mono font-bold text-lg uppercase mb-4 text-[#FF5C00]">Edit Job Definition</h3>
+      <form method="POST" action="/projects/{{.Job.ProjectID}}/jobs/{{.Job.ID}}" id="jobDetailForm" class="space-y-4">
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-mono font-bold uppercase tracking-widest mb-1">Name</label>
+            <input type="text" name="name" value="{{.Job.Name}}" class="w-full p-2 border-2 border-[#0C0C0C] font-mono text-xs">
+          </div>
+          <div>
+            <label class="block text-xs font-mono font-bold uppercase tracking-widest mb-1">Timeout (s)</label>
+            <input type="number" name="timeout_sec" value="{{.Job.TimeoutSec}}" class="w-full p-2 border-2 border-[#0C0C0C] font-mono text-xs">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-mono font-bold uppercase tracking-widest mb-1">Node Filter</label>
+          <input type="text" name="node_filter" value="{{.Job.NodeFilter}}" class="w-full p-2 border-2 border-[#0C0C0C] font-mono text-xs">
+        </div>
+
+        <!-- Options Builder -->
+        <div class="border-t-2 border-[#0C0C0C] pt-4 mt-6">
+          <div class="flex justify-between items-center mb-2">
+            <h4 class="font-mono font-bold text-sm uppercase">Variables (Options)</h4>
+            <button type="button" id="btnAddOption" class="px-2 py-1 bg-[#FFD600] border-2 border-[#0C0C0C] text-xs font-bold font-mono">+ Add</button>
+          </div>
+          <div id="optionsContainer" class="space-y-2"></div>
+        </div>
+
+        <!-- Steps Builder -->
+        <div class="border-t-2 border-[#0C0C0C] pt-4 mt-6">
+          <div class="flex justify-between items-center mb-2">
+            <h4 class="font-mono font-bold text-sm uppercase">Steps</h4>
+            <button type="button" id="btnAddStep" class="px-2 py-1 bg-[#FFD600] border-2 border-[#0C0C0C] text-xs font-bold font-mono">+ Add</button>
+          </div>
+          <div id="stepsContainer" class="space-y-2"></div>
+        </div>
+
+        <input type="hidden" name="options_json" id="optionsJson">
+        <input type="hidden" name="steps_json" id="stepsJson">
+
+        <div class="flex gap-3 pt-4 border-t-2 border-[#0C0C0C]">
+          <button type="submit" class="px-4 py-2 bg-[#FF5C00] text-white border-2 border-[#0C0C0C] font-mono font-bold text-sm">Save Changes</button>
+          <button type="button" onclick="cancelEdit()" class="px-4 py-2 bg-white border-2 border-[#0C0C0C] font-mono font-bold text-sm">Cancel</button>
+        </div>
+      </form>
     </div>
   </div>
 
   <!-- Danger Zone -->
-  <div class="bg-red-50 border-4 border-red-600 shadow-[3px_3px_0_red] p-4">
+  <div class="bg-red-50 border-4 border-red-600 shadow-[3px_3px_0_red] p-4 mt-6">
     <h3 class="font-mono font-bold text-sm uppercase tracking-widest text-red-600 mb-3">Danger Zone</h3>
     <form method="POST" action="/projects/{{.Job.ProjectID}}/jobs/{{.Job.ID}}/delete"
           onsubmit="return confirm('Delete job &quot;{{.Job.Name}}&quot;? This cannot be undone.')">
@@ -79,4 +236,175 @@
     </form>
   </div>
 </div>
+
+<!-- Run Job Modal -->
+{{if .Job.Options}}
+<div id="runModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white border-4 border-[#0C0C0C] shadow-[8px_8px_0_#0C0C0C] max-w-lg w-full">
+    <div class="bg-[#FFD600] border-b-4 border-[#0C0C0C] p-4 flex justify-between items-center">
+      <h3 class="font-mono font-bold text-lg uppercase">Run Job: {{.Job.Name}}</h3>
+      <button type="button" onclick="closeRunModal()" class="font-bold font-mono text-xl hover:text-red-600">&times;</button>
+    </div>
+    <form method="POST" action="/projects/{{.Job.ProjectID}}/jobs/{{.Job.ID}}/run" class="p-6 space-y-4">
+      <p class="text-xs font-mono text-gray-600 mb-4">Please provide values for the following options:</p>
+
+      {{range .Job.Options}}
+      <div>
+        <label class="block text-xs font-mono font-bold uppercase tracking-widest mb-1">{{.Label}} {{if not .Label}}{{.Name}}{{end}} {{if .Required}}*{{end}}</label>
+        {{if eq .OptionType "secure"}}
+        <input type="password" name="opt.{{.Name}}" value="{{.DefaultVal}}" {{if .Required}}required{{end}}
+               class="w-full p-2 border-2 border-[#0C0C0C] font-mono text-sm focus:outline-none focus:border-[#FF5C00]">
+        {{else}}
+        <input type="text" name="opt.{{.Name}}" value="{{.DefaultVal}}" {{if .Required}}required{{end}}
+               class="w-full p-2 border-2 border-[#0C0C0C] font-mono text-sm focus:outline-none focus:border-[#FF5C00]">
+        {{end}}
+        <p class="text-[10px] font-mono text-gray-500 mt-1">Variable: ${option.{{.Name}}}</p>
+      </div>
+      {{end}}
+
+      <div class="flex gap-3 pt-4 border-t-2 border-[#0C0C0C] mt-6">
+        <button type="submit" class="flex-1 px-4 py-3 bg-[#FF5C00] text-white border-2 border-[#0C0C0C] font-mono font-bold text-sm shadow-[2px_2px_0_#0C0C0C] hover:shadow-[1px_1px_0_#0C0C0C] hover:translate-y-px hover:translate-x-px transition-all">
+          Execute Pipeline
+        </button>
+        <button type="button" onclick="closeRunModal()" class="flex-1 px-4 py-3 bg-white border-2 border-[#0C0C0C] font-mono font-bold text-sm shadow-[2px_2px_0_#0C0C0C] hover:bg-[#F5F0E8] transition-all">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
 {{end}}
+
+<script>
+let stepCount = {{len .Job.Steps}};
+let optionCount = {{len .Job.Options}};
+
+function editJob() {
+  $('#viewOptions').hide();
+  $('#viewSteps').hide();
+  $('#btnEdit').hide();
+  $('#editForm').removeClass('hidden');
+
+  // Clear and rebuild to avoid duplicates if cancelled and clicked edit again
+  $('#optionsContainer').empty();
+  $('#stepsContainer').empty();
+
+  // Populate existing Options
+  {{range $idx, $opt := .Job.Options}}
+  addOptionRow("{{$opt.Name}}", "{{$opt.Label}}", "{{$opt.OptionType}}", "{{$opt.DefaultVal}}", {{$opt.Required}});
+  {{end}}
+
+  // Populate existing Steps
+  {{range $idx, $step := .Job.Steps}}
+  addStepRow("{{$step.Type}}", "{{$step.Label}}", `{{$step.Content}}`);
+  {{end}}
+}
+
+function cancelEdit() {
+  $('#editForm').addClass('hidden');
+  $('#viewOptions').show();
+  $('#viewSteps').show();
+  $('#btnEdit').show();
+}
+
+function openRunModal() {
+  $('#runModal').removeClass('hidden');
+}
+
+function closeRunModal() {
+  $('#runModal').addClass('hidden');
+}
+
+function addOptionRow(name='', label='', type='text', def='', req=false) {
+  optionCount++;
+  const html = `
+    <div class="border-2 border-[#0C0C0C] p-2 bg-white flex flex-col gap-2 option-item">
+      <div class="flex justify-between items-center bg-[#F5F0E8] p-1 border-b-2 border-dotted border-gray-400">
+        <span class="font-mono font-bold text-xs">Option</span>
+        <button type="button" class="text-red-500 font-bold font-mono hover:text-red-700 btnRemoveOption">[x]</button>
+      </div>
+      <div class="grid grid-cols-5 gap-2">
+        <input type="text" class="opt-name col-span-1 border-2 border-[#0C0C0C] p-1 font-mono text-xs" placeholder="Name" value="${name}">
+        <input type="text" class="opt-label col-span-1 border-2 border-[#0C0C0C] p-1 font-mono text-xs" placeholder="Label" value="${label}">
+        <select class="opt-type col-span-1 border-2 border-[#0C0C0C] p-1 font-mono text-xs bg-white">
+          <option value="text" ${type==='text'?'selected':''}>Text</option>
+          <option value="secure" ${type==='secure'?'selected':''}>Secure</option>
+        </select>
+        <input type="text" class="opt-default col-span-1 border-2 border-[#0C0C0C] p-1 font-mono text-xs" placeholder="Default" value="${def}">
+        <label class="col-span-1 flex items-center space-x-1 font-mono text-xs">
+          <input type="checkbox" class="opt-req" value="true" ${req?'checked':''}> <span>Req</span>
+        </label>
+      </div>
+    </div>
+  `;
+  $('#optionsContainer').append(html);
+}
+
+function addStepRow(type='command', label='', content='') {
+  stepCount++;
+  // properly escape backticks for JS template literal
+  const safeContent = content.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\$/g, '\\$');
+  const html = `
+    <div class="border-2 border-[#0C0C0C] p-2 bg-white flex flex-col gap-2 step-item">
+      <div class="flex justify-between items-center bg-[#F5F0E8] p-1 border-b-2 border-dotted border-gray-400">
+        <span class="font-mono font-bold text-xs">Step</span>
+        <button type="button" class="text-red-500 font-bold font-mono hover:text-red-700 btnRemoveStep">[x]</button>
+      </div>
+      <div class="flex gap-2">
+        <select class="step-type w-1/3 border-2 border-[#0C0C0C] p-1 font-mono text-xs bg-white">
+          <option value="command" ${type==='command'?'selected':''}>Command</option>
+          <option value="script" ${type==='script'?'selected':''}>Script</option>
+        </select>
+        <input type="text" class="step-label w-2/3 border-2 border-[#0C0C0C] p-1 font-mono text-xs" placeholder="Label" value="${label}">
+      </div>
+      <label class="text-[10px] font-mono font-bold uppercase text-gray-500">Command / Script</label>
+      <textarea class="step-content w-full border-2 border-[#0C0C0C] p-2 font-mono text-xs bg-[#0C0C0C] text-green-400 focus:outline-[#FF5C00]" rows="2" placeholder="ifconfig">${safeContent}</textarea>
+    </div>
+  `;
+  $('#stepsContainer').append(html);
+}
+
+$(document).ready(function() {
+  $('#btnAddOption').click(() => addOptionRow());
+  $('#btnAddStep').click(() => addStepRow());
+
+  $(document).on('click', '.btnRemoveOption', function() { $(this).closest('.option-item').remove(); });
+  $(document).on('click', '.btnRemoveStep', function() { $(this).closest('.step-item').remove(); });
+
+  $('#jobDetailForm').submit(function(e) {
+    const steps = [];
+    $('.step-item').each(function(index) {
+      steps.push({
+        step_order: index + 1,
+        type: $(this).find('.step-type').val(),
+        label: $(this).find('.step-label').val(),
+        content: $(this).find('.step-content').val()
+      });
+    });
+
+    if (steps.length === 0) {
+      e.preventDefault();
+      alert('A job requires at least one Step.');
+      return false;
+    }
+
+    const opts = [];
+    $('.option-item').each(function() {
+      const name = $(this).find('.opt-name').val();
+      if (name) {
+        opts.push({
+          name: name,
+          label: $(this).find('.opt-label').val(),
+          option_type: $(this).find('.opt-type').val(),
+          default_val: $(this).find('.opt-default').val(),
+          required: $(this).find('.opt-req').is(':checked')
+        });
+      }
+    });
+
+    $('#stepsJson').val(JSON.stringify(steps));
+    $('#optionsJson').val(JSON.stringify(opts));
+  });
+});
+</script>
+{{template "layout/base-close" .}}

@@ -36,3 +36,5 @@ keys/
 config.toml
 web/static/css/app.css
 *.pid
+
+DOCUMENTS/docker/_data

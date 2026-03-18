@@ -21,10 +21,10 @@ func (r *JobRepository) Create(j *model.Job) error {
 	return r.db.Create(j).Error
 }
 
-// GetByID retrieves a job by its primary key, preloading steps.
+// GetByID retrieves a job by its primary key, preloading steps and options.
 func (r *JobRepository) GetByID(id uint) (*model.Job, error) {
 	var j model.Job
-	err := r.db.Preload("Steps", func(db *gorm.DB) *gorm.DB {
+	err := r.db.Preload("Options").Preload("Schedules").Preload("Steps", func(db *gorm.DB) *gorm.DB {
 		return db.Order("step_order asc")
 	}).Preload("Project").First(&j, id).Error
 	return &j, err
@@ -54,10 +54,29 @@ func (r *JobRepository) ReplaceSteps(jobID uint, steps []model.JobStep) error {
 		if err := tx.Where("job_id = ?", jobID).Delete(&model.JobStep{}).Error; err != nil {
 			return err
 		}
-		for i := range steps {
-			steps[i].JobID = jobID
+		if len(steps) > 0 {
+			for i := range steps {
+				steps[i].JobID = jobID
+			}
+			return tx.Create(&steps).Error
 		}
-		return tx.Create(&steps).Error
+		return nil
+	})
+}
+
+// ReplaceOptions removes all existing options and inserts new ones.
+func (r *JobRepository) ReplaceOptions(jobID uint, opts []model.JobOption) error {
+	return r.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Where("job_id = ?", jobID).Delete(&model.JobOption{}).Error; err != nil {
+			return err
+		}
+		if len(opts) > 0 {
+			for i := range opts {
+				opts[i].JobID = jobID
+			}
+			return tx.Create(&opts).Error
+		}
+		return nil
 	})
 }
 

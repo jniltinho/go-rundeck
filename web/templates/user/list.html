@@ -1,0 +1,108 @@
+{{template "layout/base-open" .}}
+<div class="space-y-6">
+  <div class="flex justify-between items-center">
+    <h1 class="text-3xl font-mono font-bold text-[#0C0C0C] uppercase tracking-tighter shadow-sm">Users</h1>
+    <button onclick="$('#newUserModal').show()"
+            class="px-4 py-2 bg-[#FF5C00] text-white border-2 border-[#0C0C0C] font-mono font-bold shadow-[3px_3px_0_#0C0C0C] hover:translate-y-px hover:translate-x-px hover:shadow-[2px_2px_0_#0C0C0C] transition-all">
+      + New User
+    </button>
+  </div>
+
+  <div class="bg-white border-4 border-[#0C0C0C] shadow-[3px_3px_0_#0C0C0C]">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead class="bg-[#0C0C0C] text-white">
+          <tr>
+            <th class="p-4 font-mono text-sm tracking-wider uppercase">ID</th>
+            <th class="p-4 font-mono text-sm tracking-wider uppercase">Username</th>
+            <th class="p-4 font-mono text-sm tracking-wider uppercase">Email</th>
+            <th class="p-4 font-mono text-sm tracking-wider uppercase">Role</th>
+            <th class="p-4 font-mono text-sm tracking-wider uppercase">Status</th>
+            <th class="p-4 font-mono text-sm tracking-wider uppercase text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{range .Users}}
+          <tr class="border-b-2 border-gray-200 hover:bg-[#F5F0E8] transition-colors">
+            <td class="p-4 font-mono text-sm">{{.ID}}</td>
+            <td class="p-4 font-bold font-mono">{{.Username}}</td>
+            <td class="p-4 font-mono text-sm text-gray-600">{{.Email}}</td>
+            <td class="p-4">
+              <span class="px-2 py-1 text-xs font-bold font-mono border-2 border-[#0C0C0C] {{if eq (printf "%s" .Role) "admin"}}bg-[#FFD600] text-[#0C0C0C]{{else}}bg-gray-100 text-gray-700{{end}}">
+                {{upper (printf "%s" .Role)}}
+              </span>
+            </td>
+            <td class="p-4">
+              {{if .Active}}
+                <span class="px-2 py-1 text-xs font-bold font-mono border-2 border-green-700 bg-green-100 text-green-800">ACTIVE</span>
+              {{else}}
+                <span class="px-2 py-1 text-xs font-bold font-mono border-2 border-red-700 bg-red-100 text-red-800">INACTIVE</span>
+              {{end}}
+            </td>
+            <td class="p-4 text-right">
+              {{if .Active}}
+              <form action="/users/{{.ID}}/delete" method="POST" class="inline" onsubmit="return confirm('Are you sure you want to deactivate this user?');">
+                <button type="submit" class="p-2 border-2 border-[#0C0C0C] bg-white hover:bg-red-100 text-red-600 font-bold transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/></svg>
+                </button>
+              </form>
+              {{end}}
+            </td>
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="6" class="p-8 text-center text-gray-500 font-mono text-sm">No users found.</td>
+          </tr>
+          {{end}}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <!-- New User Modal -->
+  <div id="newUserModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white border-4 border-[#0C0C0C] shadow-[8px_8px_0_#0C0C0C] w-full max-w-lg relative block mx-auto my-auto">
+      <div class="px-6 py-4 border-b-4 border-[#0C0C0C] flex justify-between items-center bg-[#F5F0E8]">
+        <h3 class="font-mono font-bold text-lg uppercase tracking-wider">Create User</h3>
+        <button type="button" onclick="$('#newUserModal').hide()" class="text-xl font-bold hover:text-[#FF5C00]">&times;</button>
+      </div>
+
+      <form action="/users" method="POST" class="p-6 space-y-4">
+        <div>
+          <label class="block font-mono text-sm font-bold mb-1">Username</label>
+          <input type="text" name="username" required
+                 class="w-full border-2 border-[#0C0C0C] p-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C00]">
+        </div>
+        <div>
+          <label class="block font-mono text-sm font-bold mb-1">Email</label>
+          <input type="email" name="email" required
+                 class="w-full border-2 border-[#0C0C0C] p-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C00]">
+        </div>
+        <div>
+          <label class="block font-mono text-sm font-bold mb-1">Password</label>
+          <input type="password" name="password" required
+                 class="w-full border-2 border-[#0C0C0C] p-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C00]">
+        </div>
+        <div>
+          <label class="block font-mono text-sm font-bold mb-1">Role</label>
+          <select name="role" class="w-full border-2 border-[#0C0C0C] p-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-[#FF5C00] bg-white">
+            <option value="viewer">Viewer</option>
+            <option value="operator">Operator</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+
+        <div class="pt-4 flex justify-end gap-3">
+          <button type="button" onclick="$('#newUserModal').hide()"
+                  class="px-4 py-2 border-2 border-[#0C0C0C] font-mono font-bold hover:bg-gray-100">
+            Cancel
+          </button>
+          <button type="submit"
+                  class="px-4 py-2 bg-[#FFD600] border-2 border-[#0C0C0C] font-mono font-bold shadow-[2px_2px_0_#0C0C0C] hover:translate-y-px hover:translate-x-px hover:shadow-[1px_1px_0_#0C0C0C]">
+            Save User
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{{template "layout/base-close" .}}

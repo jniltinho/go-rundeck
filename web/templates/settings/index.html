@@ -1,6 +1,4 @@
-{{template "layout/base.html" .}}
-
-{{define "content"}}
+{{template "layout/base-open" .}}
 <div class="space-y-6 max-w-2xl">
   <div>
     <h2 class="text-2xl font-bold font-mono">Settings</h2>
@@ -38,4 +36,4 @@
     <p class="font-mono text-sm text-gray-600">Destructive operations. Proceed with caution.</p>
   </div>
 </div>
-{{end}}
+{{template "layout/base-close" .}}

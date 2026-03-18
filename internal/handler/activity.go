@@ -39,15 +39,17 @@ func NewDashboardHandler(
 // Index renders the dashboard.
 func (h *DashboardHandler) Index(c *echo.Context) error {
 	projectCount, _ := h.projectSvc.Count()
-	runningCount, _ := h.execSvc.CountRunning()
-	recentActivity, _ := h.execSvc.RecentActivity(10)
+	projects, _ := h.projectSvc.List()
+	lastDayCount, _ := h.execSvc.CountLastDay()
+	lastDayFailed, _ := h.execSvc.CountFailedLastDay()
 
 	return c.Render(http.StatusOK, "dashboard/index.html", map[string]interface{}{
-		"Title":          "Dashboard",
-		"ProjectCount":   projectCount,
-		"RunningCount":   runningCount,
-		"RecentActivity": recentActivity,
-		"CurrentUser":    c.Get(middleware.SessionUser),
-		"Role":           c.Get(middleware.SessionRole),
+		"Title":         "Home",
+		"ProjectCount":  projectCount,
+		"Projects":      projects,
+		"LastDayCount":  lastDayCount,
+		"LastDayFailed": lastDayFailed,
+		"CurrentUser":   c.Get(middleware.SessionUser),
+		"Role":          c.Get(middleware.SessionRole),
 	})
 }

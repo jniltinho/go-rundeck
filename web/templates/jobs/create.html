@@ -1,6 +1,4 @@
-{{template "layout/base.html" .}}
-
-{{define "content"}}
+{{template "layout/base-open" .}}
 <div class="space-y-6 max-w-2xl">
   <div>
     <p class="text-xs font-mono text-gray-500">
@@ -61,17 +59,143 @@
                class="w-full px-3 py-2 bg-white border-2 border-[#0C0C0C] font-mono text-sm focus:outline-none focus:border-[#FF5C00] shadow-[1px_1px_0_#0C0C0C]">
       </div>
 
-      <div class="flex gap-3 pt-2 border-t-2 border-[#0C0C0C]">
+      <!-- Options Section -->
+      <div class="border-t-4 border-[#0C0C0C] pt-4 mt-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-mono font-bold text-lg uppercase">Variables (Options)</h3>
+          <button type="button" id="btnAddOption" class="px-3 py-1 bg-[#FFD600] border-2 border-[#0C0C0C] text-xs font-bold font-mono shadow-[2px_2px_0_#0C0C0C]">
+            + Add Option
+          </button>
+        </div>
+        <div id="optionsContainer" class="space-y-3"></div>
+      </div>
+
+      <!-- Steps Section -->
+      <div class="border-t-4 border-[#0C0C0C] pt-4 mt-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="font-mono font-bold text-lg uppercase">Job Steps *</h3>
+          <button type="button" id="btnAddStep" class="px-3 py-1 bg-[#FFD600] border-2 border-[#0C0C0C] text-xs font-bold font-mono shadow-[2px_2px_0_#0C0C0C]">
+            + Add Step
+          </button>
+        </div>
+        <div id="stepsContainer" class="space-y-3"></div>
+      </div>
+
+      <!-- Hidden JSON Payloads -->
+      <input type="hidden" name="options_json" id="optionsJson">
+      <input type="hidden" name="steps_json" id="stepsJson">
+
+      <div class="flex gap-3 pt-6 border-t-2 border-[#0C0C0C] mt-6">
         <button type="submit"
-                class="flex-1 py-2 bg-[#FF5C00] border-2 border-[#0C0C0C] text-white font-mono font-bold text-sm shadow-[2px_2px_0_#0C0C0C] hover:shadow-[3px_3px_0_#0C0C0C] transition-all">
+                class="flex-1 py-3 bg-[#FF5C00] border-2 border-[#0C0C0C] text-white font-mono font-bold text-sm shadow-[3px_3px_0_#0C0C0C] hover:translate-y-px hover:translate-x-px hover:shadow-[2px_2px_0_#0C0C0C] transition-all">
           Create Job
         </button>
         <a href="/projects/{{.Project.ID}}/jobs"
-           class="flex-1 py-2 text-center bg-white border-2 border-[#0C0C0C] font-mono font-bold text-sm shadow-[2px_2px_0_#0C0C0C] hover:bg-[#F5F0E8] transition-all">
+           class="flex-1 py-3 text-center bg-white border-2 border-[#0C0C0C] font-mono font-bold text-sm shadow-[3px_3px_0_#0C0C0C] hover:bg-[#F5F0E8] transition-all">
           Cancel
         </a>
       </div>
     </form>
   </div>
 </div>
-{{end}}
+
+<script>
+$(document).ready(function() {
+  let stepCount = 0;
+  let optionCount = 0;
+
+  $('#btnAddOption').click(function() {
+    optionCount++;
+    const html = `
+      <div class="border-2 border-[#0C0C0C] p-3 bg-[#F5F0E8] shadow-[2px_2px_0_#0C0C0C] option-item">
+        <div class="flex justify-between items-center mb-2 border-b-2 border-dotted border-gray-400 pb-2">
+          <span class="font-mono font-bold text-xs">Option #${optionCount}</span>
+          <button type="button" class="text-red-500 font-bold font-mono hover:text-red-700 btnRemoveOption">[x]</button>
+        </div>
+        <div class="grid grid-cols-2 gap-3 mb-2">
+          <input type="text" class="opt-name w-full border-2 border-[#0C0C0C] p-1 font-mono text-xs" placeholder="Name (e.g. dir)">
+          <input type="text" class="opt-label w-full border-2 border-[#0C0C0C] p-1 font-mono text-xs" placeholder="Label (e.g. Target Directory)">
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <select class="opt-type border-2 border-[#0C0C0C] p-1 font-mono text-xs bg-white">
+            <option value="text">Text / Default</option>
+            <option value="secure">Secure / Password</option>
+          </select>
+          <input type="text" class="opt-default w-full border-2 border-[#0C0C0C] p-1 font-mono text-xs" placeholder="Default value">
+          <label class="flex items-center space-x-2 font-mono text-xs">
+            <input type="checkbox" class="opt-req" value="true">
+            <span>Required</span>
+          </label>
+        </div>
+      </div>
+    `;
+    $('#optionsContainer').append(html);
+  });
+
+  $(document).on('click', '.btnRemoveOption', function() {
+    $(this).closest('.option-item').remove();
+  });
+
+  $('#btnAddStep').click(function() {
+    stepCount++;
+    const html = `
+      <div class="border-2 border-[#0C0C0C] p-3 bg-white shadow-[2px_2px_0_#0C0C0C] step-item">
+        <div class="flex justify-between items-center mb-2 border-b-2 border-dotted border-gray-400 pb-2 bg-[#F5F0E8] p-1">
+          <span class="font-mono font-bold text-sm">Step (Command/Script)</span>
+          <button type="button" class="text-red-500 font-bold font-mono hover:text-red-700 btnRemoveStep">[x]</button>
+        </div>
+        <div class="grid grid-cols-3 gap-2 mb-2">
+          <select class="step-type w-full border-2 border-[#0C0C0C] p-1 font-mono text-xs">
+            <option value="command">Command</option>
+            <option value="script">Inline Script</option>
+          </select>
+          <input type="text" class="step-label col-span-2 w-full border-2 border-[#0C0C0C] p-1 font-mono text-xs" placeholder="Label / Name (Optional)">
+        </div>
+        <label class="text-[10px] font-mono font-bold uppercase text-gray-500">Command / Script</label>
+        <textarea class="step-content w-full border-2 border-[#0C0C0C] p-2 font-mono text-xs bg-[#0C0C0C] text-green-400 focus:outline-[#FF5C00]" rows="3" placeholder="ls -la /var/log"></textarea>
+      </div>
+    `;
+    $('#stepsContainer').append(html);
+  });
+
+  $(document).on('click', '.btnRemoveStep', function() {
+    $(this).closest('.step-item').remove();
+  });
+
+  $('form').submit(function(e) {
+    const steps = [];
+    $('.step-item').each(function(index) {
+      steps.push({
+        step_order: index + 1,
+        type: $(this).find('.step-type').val(),
+        label: $(this).find('.step-label').val(),
+        content: $(this).find('.step-content').val()
+      });
+    });
+
+    if (steps.length === 0) {
+      e.preventDefault();
+      alert('A job requires at least one Step.');
+      return false;
+    }
+
+    const opts = [];
+    $('.option-item').each(function() {
+      const name = $(this).find('.opt-name').val();
+      if (name) {
+        opts.push({
+          name: name,
+          label: $(this).find('.opt-label').val(),
+          option_type: $(this).find('.opt-type').val(),
+          default_val: $(this).find('.opt-default').val(),
+          required: $(this).find('.opt-req').is(':checked')
+        });
+      }
+    });
+
+    $('#stepsJson').val(JSON.stringify(steps));
+    $('#optionsJson').val(JSON.stringify(opts));
+  });
+});
+</script>
+{{template "layout/base-close" .}}

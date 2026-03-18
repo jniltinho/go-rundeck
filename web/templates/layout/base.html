@@ -1,31 +1,28 @@
-{{define "layout/base.html"}}
+{{define "layout/base-open"}}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{{.Title}} — Go-Rundeck</title>
+  <link rel="stylesheet" href="/static/css/fonts.css">
   <link rel="stylesheet" href="/static/css/app.css">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://code.jquery.com/jquery-4.0.0.min.js" crossorigin="anonymous"></script>
+  <script src="/static/js/lucide.min.js"></script>
 </head>
 <body class="bg-[#F5F0E8] text-[#0C0C0C] font-[Inter,DM_Sans,sans-serif] min-h-screen">
-
 <div class="flex h-screen overflow-hidden">
   {{template "layout/sidebar.html" .}}
-
   <div class="flex flex-col flex-1 overflow-hidden">
     {{template "layout/topbar.html" .}}
-
     <main class="flex-1 overflow-y-auto p-6 bg-[#F5F0E8]">
-      {{template "content" .}}
+{{end}}
+
+{{define "layout/base-close"}}
     </main>
   </div>
 </div>
-
 <script src="/static/js/app.js"></script>
-{{block "scripts" .}}{{end}}
 </body>
 </html>
 {{end}}

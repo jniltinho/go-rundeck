@@ -44,6 +44,8 @@ func runMigrate(cmd *cobra.Command, args []string) error {
 		&model.Execution{},
 		&model.ExecutionLog{},
 		&model.Schedule{},
+		&model.JobOption{},
+		&model.ExecutionOption{},
 	); err != nil {
 		return fmt.Errorf("auto migrate: %w", err)
 	}

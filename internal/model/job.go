@@ -33,6 +33,7 @@ type Job struct {
 	// Relations
 	Project    Project     `gorm:"foreignKey:ProjectID"`
 	Steps      []JobStep   `gorm:"foreignKey:JobID;constraint:OnDelete:CASCADE"`
+	Options    []JobOption `gorm:"foreignKey:JobID;constraint:OnDelete:CASCADE"`
 	Executions []Execution `gorm:"foreignKey:JobID"`
 	Schedules  []Schedule  `gorm:"foreignKey:JobID"`
 }

@@ -1,74 +1,78 @@
-{{template "layout/base.html" .}}
-
-{{define "content"}}
-<div class="space-y-6">
-  <!-- KPI Cards -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-    <!-- Projects -->
-    <div class="bg-white border-4 border-[#0C0C0C] shadow-[3px_3px_0_#0C0C0C] p-6">
-      <p class="text-xs font-mono uppercase tracking-widest text-gray-500 mb-1">Projects</p>
-      <p class="text-4xl font-mono font-bold text-[#FF5C00]">{{.ProjectCount}}</p>
-      <p class="text-xs text-gray-500 mt-1 font-mono">active projects</p>
+{{template "layout/base-open" .}}
+<div class="space-y-4">
+  <!-- Top Stats Row -->
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- Project Count -->
+    <div class="bg-white border-4 border-[#0C0C0C] shadow-[3px_3px_0_#0C0C0C] px-6 py-4 flex items-center justify-between">
+      <h2 class="text-xl font-mono font-bold">{{.ProjectCount}} Project{{if ne .ProjectCount 1}}s{{end}}</h2>
+      <button onclick="document.getElementById('modal-create').classList.remove('hidden')"
+              class="px-4 py-2 bg-[#FF5C00] border-2 border-[#0C0C0C] text-white font-mono font-bold text-sm shadow-[2px_2px_0_#0C0C0C] hover:shadow-[3px_3px_0_#0C0C0C] hover:translate-y-[-1px] transition-all">
+        New Project +
+      </button>
     </div>
 
-    <!-- Running Executions -->
-    <div class="bg-[#FFD600] border-4 border-[#0C0C0C] shadow-[3px_3px_0_#0C0C0C] p-6">
-      <p class="text-xs font-mono uppercase tracking-widest text-[#0C0C0C] mb-1">Running</p>
-      <p class="text-4xl font-mono font-bold text-[#0C0C0C]">{{.RunningCount}}</p>
-      <p class="text-xs text-[#0C0C0C] mt-1 font-mono">executions in progress</p>
-    </div>
-
-    <!-- Quick Links -->
-    <div class="bg-[#0C0C0C] border-4 border-[#0C0C0C] shadow-[3px_3px_0_#FF5C00] p-6 flex flex-col justify-between">
-      <p class="text-xs font-mono uppercase tracking-widest text-gray-400 mb-3">Quick Actions</p>
-      <div class="space-y-2">
-        <a href="/projects" class="block w-full text-center py-2 bg-[#FF5C00] border-2 border-white text-white font-mono text-sm font-bold hover:bg-white hover:text-[#0C0C0C] transition-colors">
-          + New Project
-        </a>
-      </div>
+    <!-- Last Day Executions -->
+    <div class="bg-white border-4 border-[#0C0C0C] shadow-[3px_3px_0_#0C0C0C] px-6 py-4 flex items-center">
+      <h2 class="text-xl font-mono font-bold">
+        {{.LastDayCount}} Execution{{if ne .LastDayCount 1}}s{{end}} In the last day
+        <span class="text-red-600">({{.LastDayFailed}} Failed)</span>
+      </h2>
     </div>
   </div>
 
-  <!-- Recent Activity -->
+  <!-- Project Search & Table -->
   <div class="bg-white border-4 border-[#0C0C0C] shadow-[3px_3px_0_#0C0C0C]">
-    <div class="px-6 py-4 border-b-4 border-[#0C0C0C] bg-[#0C0C0C]">
-      <h2 class="text-sm font-mono font-bold text-white uppercase tracking-widest">Recent Activity</h2>
+    <!-- Search -->
+    <div class="px-4 py-3 border-b-2 border-[#0C0C0C]">
+      <div class="relative">
+        <input type="text" id="project-search" placeholder="Project search: name, label or /regex/"
+               class="w-full pl-3 pr-10 py-2 bg-white border-2 border-[#0C0C0C] font-mono text-sm focus:outline-none focus:border-[#FF5C00] shadow-[1px_1px_0_#0C0C0C]"
+               oninput="filterProjects(this.value)">
+        <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/>
+          </svg>
+        </span>
+      </div>
     </div>
-    <div class="overflow-x-auto">
+
+    <!-- Table -->
+    <div>
       <table class="w-full text-sm font-mono">
         <thead>
-          <tr class="border-b-2 border-[#0C0C0C]">
-            <th class="text-left px-4 py-3 font-bold text-xs uppercase tracking-wider bg-[#F5F0E8]">ID</th>
-            <th class="text-left px-4 py-3 font-bold text-xs uppercase tracking-wider bg-[#F5F0E8]">Job</th>
-            <th class="text-left px-4 py-3 font-bold text-xs uppercase tracking-wider bg-[#F5F0E8]">Status</th>
-            <th class="text-left px-4 py-3 font-bold text-xs uppercase tracking-wider bg-[#F5F0E8]">Triggered</th>
-            <th class="text-left px-4 py-3 font-bold text-xs uppercase tracking-wider bg-[#F5F0E8]">Started</th>
+          <tr class="border-b-2 border-[#0C0C0C] bg-[#F5F0E8]">
+            <th class="text-left px-4 py-3 font-bold text-xs uppercase tracking-wider">Projects</th>
+            <th class="text-left px-4 py-3 font-bold text-xs uppercase tracking-wider">Activity</th>
+            <th class="text-right px-4 py-3 font-bold text-xs uppercase tracking-wider">Actions</th>
           </tr>
         </thead>
-        <tbody>
-          {{range .RecentActivity}}
-          <tr class="border-b border-gray-200 hover:bg-[#F5F0E8] transition-colors">
+        <tbody id="project-table-body">
+          {{range .Projects}}
+          <tr class="border-b border-gray-200 hover:bg-[#F5F0E8] transition-colors project-row" data-name="{{.Name}}" data-desc="{{.Description}}">
             <td class="px-4 py-3">
-              <a href="/executions/{{.ID}}" class="text-[#FF5C00] hover:underline font-bold">#{{.ID}}</a>
-            </td>
-            <td class="px-4 py-3 font-medium">{{.Job.Name}}</td>
-            <td class="px-4 py-3">
-              {{if eq (printf "%s" .Status) "succeeded"}}
-                <span class="px-2 py-1 bg-green-100 border border-green-600 text-green-700 text-xs font-bold">SUCCEEDED</span>
-              {{else if eq (printf "%s" .Status) "running"}}
-                <span class="px-2 py-1 bg-[#FFD600] border border-[#0C0C0C] text-[#0C0C0C] text-xs font-bold">RUNNING</span>
-              {{else if eq (printf "%s" .Status) "failed"}}
-                <span class="px-2 py-1 bg-red-100 border border-red-600 text-red-700 text-xs font-bold">FAILED</span>
-              {{else}}
-                <span class="px-2 py-1 bg-gray-100 border border-gray-400 text-gray-600 text-xs font-bold">{{.Status}}</span>
+              <a href="/projects/{{.ID}}" class="font-bold hover:text-[#FF5C00] transition-colors">{{.Name}}</a>
+              {{if .Description}}
+              <p class="text-xs text-gray-500 mt-0.5">{{.Description}}</p>
               {{end}}
             </td>
-            <td class="px-4 py-3 text-gray-500">{{.TriggerType}}</td>
-            <td class="px-4 py-3 text-gray-500">{{.StartedAt.Format "2006-01-02 15:04"}}</td>
+            <td class="px-4 py-3 text-gray-400 text-xs">None</td>
+            <td class="px-4 py-3 text-right">
+              <div class="relative inline-block text-left">
+                <button onclick="toggleDropdown('dd-{{.ID}}')"
+                        class="px-3 py-1 bg-white border-2 border-[#0C0C0C] font-mono text-xs font-bold shadow-[1px_1px_0_#0C0C0C] hover:bg-[#F5F0E8] transition-colors flex items-center gap-1">
+                  Action <span class="text-gray-500">&#9660;</span>
+                </button>
+                <div id="dd-{{.ID}}" class="hidden absolute right-0 z-20 mt-1 w-40 bg-white border-2 border-[#0C0C0C] shadow-[2px_2px_0_#0C0C0C]">
+                  <a href="/projects/{{.ID}}" class="block px-4 py-2 text-xs font-mono hover:bg-[#F5F0E8] border-b border-gray-200">View</a>
+                  <a href="/projects/{{.ID}}/jobs" class="block px-4 py-2 text-xs font-mono hover:bg-[#F5F0E8] border-b border-gray-200">Jobs</a>
+                  <a href="/projects/{{.ID}}/nodes" class="block px-4 py-2 text-xs font-mono hover:bg-[#F5F0E8]">Nodes</a>
+                </div>
+              </div>
+            </td>
           </tr>
           {{else}}
           <tr>
-            <td colspan="5" class="px-4 py-8 text-center text-gray-400 font-mono">No activity yet.</td>
+            <td colspan="3" class="px-4 py-10 text-center text-gray-400 font-mono">No projects yet.</td>
           </tr>
           {{end}}
         </tbody>
@@ -76,4 +80,70 @@
     </div>
   </div>
 </div>
-{{end}}
+
+<!-- Create Project Modal -->
+<div id="modal-create" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+  <div class="bg-[#F5F0E8] border-4 border-[#0C0C0C] shadow-[4px_4px_0_#FF5C00] w-full max-w-md p-6">
+    <div class="flex items-center justify-between mb-4 border-b-4 border-[#0C0C0C] pb-3">
+      <h3 class="font-bold font-mono text-lg">New Project</h3>
+      <button onclick="document.getElementById('modal-create').classList.add('hidden')"
+              class="font-mono text-lg font-bold hover:text-[#FF5C00]">&times;</button>
+    </div>
+    <form method="POST" action="/projects" class="space-y-4">
+      <div>
+        <label class="block text-xs font-mono font-bold uppercase tracking-widest mb-1">Name *</label>
+        <input type="text" name="name" required
+               class="w-full px-3 py-2 bg-white border-2 border-[#0C0C0C] font-mono text-sm focus:outline-none focus:border-[#FF5C00] shadow-[1px_1px_0_#0C0C0C]">
+      </div>
+      <div>
+        <label class="block text-xs font-mono font-bold uppercase tracking-widest mb-1">Description</label>
+        <textarea name="description" rows="2"
+                  class="w-full px-3 py-2 bg-white border-2 border-[#0C0C0C] font-mono text-sm focus:outline-none focus:border-[#FF5C00] shadow-[1px_1px_0_#0C0C0C]"></textarea>
+      </div>
+      <div>
+        <label class="block text-xs font-mono font-bold uppercase tracking-widest mb-1">Tags</label>
+        <input type="text" name="tags" placeholder="prod,web,infra"
+               class="w-full px-3 py-2 bg-white border-2 border-[#0C0C0C] font-mono text-sm focus:outline-none focus:border-[#FF5C00] shadow-[1px_1px_0_#0C0C0C]">
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="submit"
+                class="flex-1 py-2 bg-[#FF5C00] border-2 border-[#0C0C0C] text-white font-mono font-bold text-sm shadow-[2px_2px_0_#0C0C0C] hover:shadow-[3px_3px_0_#0C0C0C] transition-all">
+          Create
+        </button>
+        <button type="button"
+                onclick="document.getElementById('modal-create').classList.add('hidden')"
+                class="flex-1 py-2 bg-white border-2 border-[#0C0C0C] font-mono font-bold text-sm shadow-[2px_2px_0_#0C0C0C] hover:bg-[#F5F0E8] transition-all">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function toggleDropdown(id) {
+  const dd = document.getElementById(id);
+  // Close all other dropdowns
+  document.querySelectorAll('[id^="dd-"]').forEach(el => {
+    if (el.id !== id) el.classList.add('hidden');
+  });
+  dd.classList.toggle('hidden');
+}
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('[id^="dd-"]') && !e.target.closest('button[onclick^="toggleDropdown"]')) {
+    document.querySelectorAll('[id^="dd-"]').forEach(el => el.classList.add('hidden'));
+  }
+});
+
+function filterProjects(query) {
+  const rows = document.querySelectorAll('.project-row');
+  const q = query.toLowerCase().trim();
+  rows.forEach(row => {
+    const name = (row.dataset.name || '').toLowerCase();
+    const desc = (row.dataset.desc || '').toLowerCase();
+    row.style.display = (!q || name.includes(q) || desc.includes(q)) ? '' : 'none';
+  });
+}
+</script>
+{{template "layout/base-close" .}}

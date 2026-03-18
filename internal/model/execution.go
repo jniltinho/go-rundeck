@@ -34,6 +34,7 @@ type Execution struct {
 	CreatedAt   time.Time
 
 	// Relations
-	Job  Job            `gorm:"foreignKey:JobID"`
-	Logs []ExecutionLog `gorm:"foreignKey:ExecutionID;constraint:OnDelete:CASCADE"`
+	Job     Job               `gorm:"foreignKey:JobID"`
+	Options []ExecutionOption `gorm:"foreignKey:ExecutionID;constraint:OnDelete:CASCADE"`
+	Logs    []ExecutionLog    `gorm:"foreignKey:ExecutionID;constraint:OnDelete:CASCADE"`
 }

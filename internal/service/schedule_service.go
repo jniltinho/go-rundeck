@@ -1,13 +1,12 @@
 package service
 
 import (
-	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"go-rundeck/internal/model"
 
+	"github.com/alaingilbert/cron"
 	"gorm.io/gorm"
 )
 
@@ -75,7 +74,7 @@ func (s *ScheduleService) checkSchedules(now time.Time) {
 
 	for _, sched := range schedules {
 		go func(sc model.Schedule) {
-			if _, err := s.jobSvc.Run(sc.JobID, nil, model.TriggerTypeSchedule); err != nil {
+			if _, err := s.jobSvc.Run(sc.JobID, nil, model.TriggerTypeSchedule, nil); err != nil {
 				log.Printf("[scheduler] failed to run job %d: %v", sc.JobID, err)
 			}
 
@@ -90,25 +89,16 @@ func (s *ScheduleService) checkSchedules(now time.Time) {
 }
 
 // nextCronRun is a simplified cron parser that handles "*/N" minute intervals.
-// For production use, replace with a proper cron library.
+// nextCronRun uses robfig/cron/v3 to parse a standard cron expression and return the next execution time.
 func nextCronRun(expr string, from time.Time) *time.Time {
-	parts := strings.Fields(expr)
-	if len(parts) != 5 {
-		t := from.Add(5 * time.Minute)
+	parser := cron.NewParser(cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow | cron.Descriptor)
+	schedule, err := parser.Parse(expr)
+	if err != nil {
+		// On invalid cron, return nil or maybe advance by 1 hour as fallback to avoid tight loops?
+		log.Printf("[scheduler] invalid cron expression %q: %v", expr, err)
+		t := from.Add(time.Hour)
 		return &t
 	}
-
-	// Handle simple "*/N" minute expressions
-	minPart := parts[0]
-	if strings.HasPrefix(minPart, "*/") {
-		var n int
-		if _, err := fmt.Sscanf(minPart, "*/%d", &n); err == nil && n > 0 {
-			t := from.Add(time.Duration(n) * time.Minute)
-			return &t
-		}
-	}
-
-	// Default: next minute boundary
-	t := from.Truncate(time.Minute).Add(time.Minute)
-	return &t
+	next := schedule.Next(from)
+	return &next
 }

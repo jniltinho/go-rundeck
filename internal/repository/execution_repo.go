@@ -24,7 +24,7 @@ func (r *ExecutionRepository) Create(e *model.Execution) error {
 // GetByID retrieves an execution by its primary key.
 func (r *ExecutionRepository) GetByID(id uint) (*model.Execution, error) {
 	var e model.Execution
-	err := r.db.Preload("Job").First(&e, id).Error
+	err := r.db.Preload("Job").Preload("Options").First(&e, id).Error
 	return &e, err
 }
 
@@ -79,6 +79,22 @@ func (r *ExecutionRepository) CountRunning() (int64, error) {
 	var count int64
 	err := r.db.Model(&model.Execution{}).
 		Where("status = ?", model.ExecutionStatusRunning).Count(&count).Error
+	return count, err
+}
+
+// CountLastDay returns the total executions in the last 24 hours.
+func (r *ExecutionRepository) CountLastDay() (int64, error) {
+	var count int64
+	err := r.db.Model(&model.Execution{}).
+		Where("created_at >= NOW() - INTERVAL 1 DAY").Count(&count).Error
+	return count, err
+}
+
+// CountFailedLastDay returns the failed executions in the last 24 hours.
+func (r *ExecutionRepository) CountFailedLastDay() (int64, error) {
+	var count int64
+	err := r.db.Model(&model.Execution{}).
+		Where("created_at >= NOW() - INTERVAL 1 DAY AND status = ?", model.ExecutionStatusFailed).Count(&count).Error
 	return count, err
 }
 

@@ -1,6 +1,4 @@
-{{template "layout/base.html" .}}
-
-{{define "content"}}
+{{template "layout/base-open" .}}
 <div class="space-y-6">
   <div>
     <p class="text-xs font-mono text-gray-500">
@@ -76,4 +74,4 @@
     </form>
   </div>
 </div>
-{{end}}
+{{template "layout/base-close" .}}

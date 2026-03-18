@@ -51,7 +51,7 @@ func (h *ScheduleHandler) Create(c *echo.Context) error {
 	if err := h.db.Create(sched).Error; err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-	return c.JSON(http.StatusCreated, sched)
+	return c.Redirect(http.StatusSeeOther, "/projects/"+c.Param("id")+"/jobs/"+c.Param("jid"))
 }
 
 // Delete removes a schedule.
@@ -64,5 +64,23 @@ func (h *ScheduleHandler) Delete(c *echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	_ = c.Get(middleware.SessionUser) // ensure middleware import is used
-	return c.NoContent(http.StatusNoContent)
+	// Redirect back to job details
+	return c.Redirect(http.StatusSeeOther, "/projects/"+c.Param("id")+"/jobs/"+c.Param("jid"))
+}
+
+// Toggle flips the enabled state of a schedule.
+func (h *ScheduleHandler) Toggle(c *echo.Context) error {
+	id, err := parseID(c, "sid")
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid schedule id")
+	}
+	var sched model.Schedule
+	if err := h.db.First(&sched, id).Error; err != nil {
+		return echo.NewHTTPError(http.StatusNotFound, "schedule not found")
+	}
+	sched.Enabled = !sched.Enabled
+	if err := h.db.Save(&sched).Error; err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	return c.Redirect(http.StatusSeeOther, "/projects/"+c.Param("id")+"/jobs/"+c.Param("jid"))
 }

@@ -1,0 +1,18 @@
+services:
+  rundeck:
+    image: rundeck/rundeck:5.19.0 # Use a specific version, check Docker Hub for the latest
+    container_name: rundeck_oss
+    ports:
+      - "4440:4440"
+    environment:
+      # This is the URL used by the app for links/redirects; adjust if hosting behind a proxy
+      - RUNDECK_GRAILS_URL=http://localhost:4440
+      - DEFAULT_ADMIN_PASSWORD=admin
+    volumes:
+      # Persist data (jobs, history, etc.)
+      - rundeck_data:/home/rundeck/server/data
+      # Optional: Mount custom plugins directory
+      # - rundeck/plugins:/opt/rundeck-plugins
+
+volumes:
+  rundeck_data:

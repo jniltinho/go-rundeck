@@ -1,6 +1,6 @@
 {{define "layout/sidebar.html"}}
 <aside class="w-64 bg-[#0C0C0C] text-white flex flex-col border-r-4 border-[#FF5C00] flex-shrink-0">
-  <div class="px-6 py-5 border-b-2 border-[#FF5C00]">
+  <div class="px-6 h-16 flex flex-col justify-center border-b-2 border-[#FF5C00]">
     <a href="/" class="flex items-center gap-2">
       <span class="text-[#FF5C00] font-mono font-bold text-xl tracking-tight">[RUN]</span>
       <span class="font-bold text-lg tracking-wide">DECK</span>
@@ -32,22 +32,18 @@
       <span class="font-mono text-[#FFD600]">&#9670;</span> Key Storage
     </a>
 
+    {{if eq (printf "%s" .Role) "admin"}}
+    <a href="/users"
+       class="flex items-center gap-3 px-3 py-2 text-sm font-medium border-2 border-transparent hover:border-[#FF5C00] hover:bg-[#FF5C00] hover:text-black transition-colors">
+      <span class="font-mono text-[#FFD600]">&#9787;</span> Users
+    </a>
+    {{end}}
+
     <a href="/settings"
        class="flex items-center gap-3 px-3 py-2 text-sm font-medium border-2 border-transparent hover:border-[#FF5C00] hover:bg-[#FF5C00] hover:text-black transition-colors">
       <span class="font-mono text-[#FFD600]">&#9881;</span> Settings
     </a>
   </nav>
 
-  <div class="px-4 py-4 border-t-2 border-gray-800">
-    <p class="text-xs font-mono text-gray-500">logged in as</p>
-    <p class="text-sm font-bold text-[#FFD600] font-mono">{{.CurrentUser}}</p>
-    <p class="text-xs text-gray-400">{{.Role}}</p>
-    <form method="POST" action="/logout" class="mt-2">
-      <button type="submit"
-              class="text-xs font-mono text-[#FF5C00] hover:underline">
-        [logout]
-      </button>
-    </form>
-  </div>
 </aside>
 {{end}}

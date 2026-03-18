@@ -1,4 +1,10 @@
 /* Go-Rundeck — app.js */
+
+// Initialize Lucide icons
+if (typeof lucide !== 'undefined') {
+  lucide.createIcons();
+}
+
 $(document).ready(function () {
 
   // ── Toast helper ────────────────────────────────────────────────────────────

@@ -8,6 +8,7 @@ import (
 	"go-rundeck/internal/model"
 	"go-rundeck/internal/service"
 
+	"encoding/json"
 	"github.com/labstack/echo/v5"
 )
 
@@ -111,7 +112,21 @@ func (h *JobHandler) Create(c *echo.Context) error {
 		job.OnError = model.OnErrorStop
 	}
 
-	created, err := h.jobSvc.Create(job)
+	var steps []model.JobStep
+	if stepsJSON := c.FormValue("steps_json"); stepsJSON != "" {
+		if err := json.Unmarshal([]byte(stepsJSON), &steps); err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid steps json: "+err.Error())
+		}
+	}
+
+	var opts []model.JobOption
+	if optsJSON := c.FormValue("options_json"); optsJSON != "" {
+		if err := json.Unmarshal([]byte(optsJSON), &opts); err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid options json: "+err.Error())
+		}
+	}
+
+	created, err := h.jobSvc.Create(job, steps, opts)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
@@ -144,7 +159,21 @@ func (h *JobHandler) Update(c *echo.Context) error {
 		job.TimeoutSec = ts
 	}
 
-	if err := h.jobSvc.Update(job); err != nil {
+	var steps []model.JobStep
+	if stepsJSON := c.FormValue("steps_json"); stepsJSON != "" {
+		if err := json.Unmarshal([]byte(stepsJSON), &steps); err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid steps json: "+err.Error())
+		}
+	}
+
+	var opts []model.JobOption
+	if optsJSON := c.FormValue("options_json"); optsJSON != "" {
+		if err := json.Unmarshal([]byte(optsJSON), &opts); err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "invalid options json: "+err.Error())
+		}
+	}
+
+	if err := h.jobSvc.Update(job, steps, opts); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	return c.Redirect(http.StatusSeeOther, "/projects/"+c.Param("id")+"/jobs/"+c.Param("jid"))
@@ -174,7 +203,16 @@ func (h *JobHandler) Run(c *echo.Context) error {
 		userID = &uid
 	}
 
-	exec, err := h.jobSvc.Run(jobID, userID, model.TriggerTypeManual)
+	// Extract job options from the form (inputs prefixed with opt.)
+	opts := make(map[string]string)
+	_ = c.Request().ParseForm()
+	for k, v := range c.Request().PostForm {
+		if len(k) > 4 && k[:4] == "opt." {
+			opts[k[4:]] = v[0]
+		}
+	}
+
+	exec, err := h.jobSvc.Run(jobID, userID, model.TriggerTypeManual, opts)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}

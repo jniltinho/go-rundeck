@@ -13,6 +13,7 @@ import (
 type LogEvent struct {
 	ExecutionID uint
 	Log         model.ExecutionLog
+	Done        bool // true = execution finished, no more events
 }
 
 // ExecutionService manages execution lifecycle and SSE streaming.
@@ -30,9 +31,18 @@ func NewExecutionService(repo *repository.ExecutionRepository) *ExecutionService
 	}
 }
 
-// Create persists a new execution record.
-func (s *ExecutionService) Create(jobID, projectID uint, triggerType model.TriggerType, triggeredBy *uint) (*model.Execution, error) {
+// Create persists a new execution record and its options.
+func (s *ExecutionService) Create(jobID, projectID uint, triggerType model.TriggerType, triggeredBy *uint, opts map[string]string) (*model.Execution, error) {
 	now := time.Now()
+	
+	var execOpts []model.ExecutionOption
+	for k, v := range opts {
+		execOpts = append(execOpts, model.ExecutionOption{
+			OptionName: k,
+			Value:      v,
+		})
+	}
+
 	e := &model.Execution{
 		JobID:       jobID,
 		ProjectID:   projectID,
@@ -41,6 +51,7 @@ func (s *ExecutionService) Create(jobID, projectID uint, triggerType model.Trigg
 		TriggerType: triggerType,
 		StartedAt:   now,
 		CreatedAt:   now,
+		Options:     execOpts,
 	}
 	if err := s.repo.Create(e); err != nil {
 		return nil, err
@@ -112,7 +123,23 @@ func (s *ExecutionService) UpdateStatus(id uint, status model.ExecutionStatus) e
 		dur := now.Sub(e.StartedAt).Seconds()
 		e.DurationSec = &dur
 	}
-	return s.repo.Update(e)
+	if err := s.repo.Update(e); err != nil {
+		return err
+	}
+
+	// Signal SSE subscribers that the execution has finished
+	if status != model.ExecutionStatusRunning {
+		s.mu.RLock()
+		subs := s.channels[id]
+		s.mu.RUnlock()
+		for _, ch := range subs {
+			select {
+			case ch <- LogEvent{ExecutionID: id, Done: true}:
+			default:
+			}
+		}
+	}
+	return nil
 }
 
 // Abort marks an execution as aborted.
@@ -162,4 +189,14 @@ func (s *ExecutionService) RecentActivity(limit int) ([]model.Execution, error) 
 // CountRunning returns the number of running executions.
 func (s *ExecutionService) CountRunning() (int64, error) {
 	return s.repo.CountRunning()
+}
+
+// CountLastDay returns the total executions in the last 24 hours.
+func (s *ExecutionService) CountLastDay() (int64, error) {
+	return s.repo.CountLastDay()
+}
+
+// CountFailedLastDay returns the failed executions in the last 24 hours.
+func (s *ExecutionService) CountFailedLastDay() (int64, error) {
+	return s.repo.CountFailedLastDay()
 }

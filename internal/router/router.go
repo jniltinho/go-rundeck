@@ -2,6 +2,7 @@ package router
 
 import (
 	"embed"
+	"fmt"
 	"html/template"
 	"io"
 	"io/fs"
@@ -70,18 +71,26 @@ func Setup(
 	jobRepo := repository.NewJobRepository(db)
 	execRepo := repository.NewExecutionRepository(db)
 
+	keyRepo, err := repository.NewKeyRepository(db, secret)
+	if err != nil {
+		slog.Error("failed to init key repository", "error", err)
+	}
+
 	projectSvc := service.NewProjectService(projectRepo)
 	sshSvc := service.NewSSHService(10)
 	execSvc := service.NewExecutionService(execRepo)
-	jobSvc := service.NewJobService(jobRepo, nodeRepo, execSvc, sshSvc)
+	keySvc := service.NewKeyService(keyRepo)
+	jobSvc := service.NewJobService(jobRepo, nodeRepo, execSvc, sshSvc, keySvc)
 
 	authH := handler.NewAuthHandler(db)
 	dashH := handler.NewDashboardHandler(projectSvc, execSvc, nodeRepo, jobRepo, execRepo)
 	projectH := handler.NewProjectHandler(projectSvc)
-	nodeH := handler.NewNodeHandler(nodeRepo, projectSvc, sshSvc)
+	nodeH := handler.NewNodeHandler(nodeRepo, projectSvc, sshSvc, keySvc)
 	jobH := handler.NewJobHandler(jobSvc, projectSvc)
 	execH := handler.NewExecutionHandler(execSvc, projectSvc)
 	schedH := handler.NewScheduleHandler(db)
+	userH := handler.NewUserHandler(db)
+	keyH := handler.NewKeyHandler(keySvc)
 
 	// ── Public routes ─────────────────────────────────────────────────────────
 	e.GET("/login", authH.ShowLogin)
@@ -119,6 +128,7 @@ func Setup(
 	// Schedules
 	protected.GET("/projects/:id/jobs/:jid/schedules", schedH.ListByJob)
 	protected.POST("/projects/:id/jobs/:jid/schedules", schedH.Create)
+	protected.POST("/projects/:id/jobs/:jid/schedules/:sid/toggle", schedH.Toggle)
 	protected.POST("/projects/:id/jobs/:jid/schedules/:sid/delete", schedH.Delete)
 
 	// Executions
@@ -126,6 +136,17 @@ func Setup(
 	protected.GET("/executions/:eid", execH.Show)
 	protected.GET("/executions/:eid/log", execH.StreamLogs)
 	protected.POST("/executions/:eid/abort", execH.Abort)
+
+	// Users (Admin Only)
+	adminGrp := e.Group("/users", mw.RequireAuth, mw.RequireAdmin)
+	adminGrp.GET("", userH.List)
+	adminGrp.POST("", userH.Create)
+	adminGrp.POST("/:id/delete", userH.Delete)
+
+	// Key Storage
+	protected.GET("/keys", keyH.ListSystemKeys)
+	protected.POST("/keys", keyH.Create)
+	protected.POST("/keys/:id/delete", keyH.Delete)
 
 	return e
 }
@@ -138,6 +159,12 @@ func parseTemplates(fsys embed.FS) *template.Template {
 		"base":  path.Base,
 		"add":   func(a, b int) int { return a + b },
 		"sub":   func(a, b int) int { return a - b },
+		"fmtDur": func(p *float64) string {
+			if p == nil {
+				return "—"
+			}
+			return fmt.Sprintf("%.1fs", *p)
+		},
 	}
 
 	tmpl := template.New("").Funcs(funcMap)

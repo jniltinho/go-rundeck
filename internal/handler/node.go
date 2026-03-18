@@ -12,19 +12,20 @@ import (
 	"github.com/labstack/echo/v5"
 )
 
-// NodeHandler handles node CRUD routes.
 type NodeHandler struct {
 	nodeRepo   *repository.NodeRepository
 	projectSvc *service.ProjectService
 	sshSvc     *service.SSHService
+	keySvc     *service.KeyService
 }
 
 // NewNodeHandler creates a new NodeHandler.
-func NewNodeHandler(nodeRepo *repository.NodeRepository, projectSvc *service.ProjectService, sshSvc *service.SSHService) *NodeHandler {
+func NewNodeHandler(nodeRepo *repository.NodeRepository, projectSvc *service.ProjectService, sshSvc *service.SSHService, keySvc *service.KeyService) *NodeHandler {
 	return &NodeHandler{
 		nodeRepo:   nodeRepo,
 		projectSvc: projectSvc,
 		sshSvc:     sshSvc,
+		keySvc:     keySvc,
 	}
 }
 
@@ -42,10 +43,17 @@ func (h *NodeHandler) List(c *echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
+	
+	keys, err := h.keySvc.ListSystemKeys()
+	if err != nil {
+		keys = make([]model.KeyStorage, 0) // fall back to empty if we can't load them
+	}
+
 	return c.Render(http.StatusOK, "nodes/list.html", map[string]interface{}{
 		"Title":       "Nodes - " + project.Name,
 		"Project":     project,
 		"Nodes":       nodes,
+		"Keys":        keys,
 		"CurrentUser": c.Get(middleware.SessionUser),
 		"Role":        c.Get(middleware.SessionRole),
 	})
@@ -92,6 +100,13 @@ func (h *NodeHandler) Create(c *echo.Context) error {
 		Description: c.FormValue("description"),
 		OSFamily:    c.FormValue("os_family"),
 		Active:      true,
+	}
+
+	keyIDStr := c.FormValue("key_id")
+	if keyIDStr != "" {
+		kid, _ := strconv.ParseUint(keyIDStr, 10, 32)
+		kidu := uint(kid)
+		node.KeyID = &kidu
 	}
 
 	if err := h.nodeRepo.Create(node); err != nil {

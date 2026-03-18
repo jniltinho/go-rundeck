@@ -1,13 +1,28 @@
 {{define "layout/topbar.html"}}
-<header class="bg-white border-b-4 border-[#0C0C0C] px-6 py-3 flex items-center justify-between shadow-[0_2px_0_#0C0C0C]">
+<header class="bg-white border-b-2 border-[#0C0C0C] px-6 h-16 flex items-center justify-between shadow-[0_2px_0_#0C0C0C]">
   <div class="flex items-center gap-4">
     <h1 class="font-bold text-lg font-mono tracking-tight">{{.Title}}</h1>
   </div>
   <div class="flex items-center gap-3">
-    <span class="px-2 py-1 bg-[#FFD600] border-2 border-[#0C0C0C] text-xs font-mono font-bold shadow-[1px_1px_0_#0C0C0C]">
-      {{.Role}}
-    </span>
-    <span class="text-sm font-mono text-gray-600">{{.CurrentUser}}</span>
+    <!-- User info -->
+    <div class="flex items-center gap-2">
+      <div class="p-1.5 bg-[#FFD600] border-2 border-[#0C0C0C] shadow-[1px_1px_0_#0C0C0C]">
+        <i data-lucide="user" class="h-4 w-4 text-[#0C0C0C]"></i>
+      </div>
+      <div class="leading-tight">
+        <p class="text-xs font-mono font-bold uppercase tracking-wide">{{.CurrentUser}}</p>
+        <p class="text-[10px] font-mono text-gray-500 uppercase tracking-widest">{{.Role}}</p>
+      </div>
+    </div>
+    <!-- Separator -->
+    <span class="h-8 w-px bg-[#0C0C0C]"></span>
+    <!-- Logout -->
+    <form method="POST" action="/logout">
+      <button type="submit" class="flex items-center gap-1.5 px-3 py-1.5 border-2 border-[#0C0C0C] font-mono font-bold text-xs text-[#FF5C00] bg-white shadow-[1px_1px_0_#0C0C0C] hover:bg-[#FF5C00] hover:text-white transition-colors">
+        <i data-lucide="log-out" class="h-3.5 w-3.5"></i>
+        Logout
+      </button>
+    </form>
   </div>
 </header>
 {{end}}

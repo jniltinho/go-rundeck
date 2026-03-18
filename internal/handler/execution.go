@@ -3,7 +3,6 @@ package handler
 import (
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"go-rundeck/internal/middleware"
 	"go-rundeck/internal/service"
@@ -33,14 +32,7 @@ func (h *ExecutionHandler) List(c *echo.Context) error {
 		return echo.NewHTTPError(http.StatusNotFound, "project not found")
 	}
 
-	page, _ := strconv.Atoi(c.QueryParam("page"))
-	if page < 1 {
-		page = 1
-	}
-	limit := 20
-	offset := (page - 1) * limit
-
-	execs, err := h.execSvc.List(projectID, limit, offset)
+	execs, err := h.execSvc.List(projectID, 500, 0)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
@@ -48,7 +40,6 @@ func (h *ExecutionHandler) List(c *echo.Context) error {
 		"Title":       "Executions - " + project.Name,
 		"Project":     project,
 		"Executions":  execs,
-		"Page":        page,
 		"CurrentUser": c.Get(middleware.SessionUser),
 		"Role":        c.Get(middleware.SessionRole),
 	})
@@ -122,8 +113,8 @@ func (h *ExecutionHandler) StreamLogs(c *echo.Context) error {
 		case <-ctx.Done():
 			return nil
 		case event, ok := <-ch:
-			if !ok {
-				fmt.Fprintf(w, "event: done\ndata: stream closed\n\n")
+			if !ok || event.Done {
+				fmt.Fprintf(w, "event: done\ndata: execution finished\n\n")
 				rc.Flush()
 				return nil
 			}

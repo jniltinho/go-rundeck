@@ -1,6 +1,4 @@
-{{template "layout/base.html" .}}
-
-{{define "content"}}
+{{template "layout/base-open" .}}
 <div class="space-y-6">
   <!-- Breadcrumb & Header -->
   <div class="flex items-start justify-between">
@@ -69,4 +67,4 @@
     </div>
   </div>
 </div>
-{{end}}
+{{template "layout/base-close" .}}

@@ -33,11 +33,12 @@ function initExecLog(execID, status) {
     scrollBottom($output);
   };
 
-  es.addEventListener('done', function (e) {
+  es.addEventListener('done', function () {
     $indicator.text('complete');
     appendLine($output, '--- execution complete ---', 'text-gray-500');
     scrollBottom($output);
     es.close();
+    setTimeout(function () { window.location.reload(); }, 800);
   });
 
   es.onerror = function () {
@@ -49,7 +50,9 @@ function initExecLog(execID, status) {
 
 function appendLine($container, text, cssClass) {
   cssClass = cssClass || 'text-green-400';
-  var $line = $('<div>').addClass(cssClass).text(text);
+  var $line = $('<div>').addClass(cssClass).append(
+    $('<span>').addClass('whitespace-pre-wrap').text(text)
+  );
   $container.append($line);
 }
 
