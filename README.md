@@ -92,6 +92,10 @@ ssl_key    = "ssl/server.key"
 
 When `ssl_enable = true` the session cookie is automatically marked `Secure`.
 
+## 📖 Installation and Configuration Guide
+
+For complete step-by-step instructions on how to set up Go-Rundeck on Ubuntu with MariaDB, systemd service, and HTTPS, see our [Complete Setup Guide](DOCUMENTS/setup/README.md).
+
 ## License
 
 MIT License (or your chosen license)

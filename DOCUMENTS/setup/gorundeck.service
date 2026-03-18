@@ -1,0 +1,26 @@
+[Unit]
+Description=Go-Rundeck Service
+After=network-online.target mariadb.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+
+WorkingDirectory=/opt/go-rundeck
+
+ExecStart=/opt/go-rundeck/gorundeck serve
+
+Restart=always
+RestartSec=5s
+
+StandardOutput=append:/opt/go-rundeck/gorundeck.log
+StandardError=append:/opt/go-rundeck/gorundeck.log
+
+# Security hardening (uncomment for production)
+# NoNewPrivileges=yes
+# ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target
