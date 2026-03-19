@@ -45,6 +45,9 @@ func (h *UserHandler) Create(c *echo.Context) error {
 	if username == "" || password == "" {
 		return echo.NewHTTPError(http.StatusBadRequest, "Username and password are required")
 	}
+	if len(password) < 8 {
+		return echo.NewHTTPError(http.StatusBadRequest, "Password must be at least 8 characters")
+	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -91,6 +94,9 @@ func (h *UserHandler) Update(c *echo.Context) error {
 	user.Active = c.FormValue("active") == "1"
 
 	if pw := c.FormValue("password"); pw != "" {
+		if len(pw) < 8 {
+			return echo.NewHTTPError(http.StatusBadRequest, "Password must be at least 8 characters")
+		}
 		hash, err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.DefaultCost)
 		if err != nil {
 			return echo.NewHTTPError(http.StatusInternalServerError, "failed to process password")
@@ -114,10 +120,10 @@ func (h *UserHandler) Delete(c *echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid user ID")
 	}
 
-	// Deactivate rather than delete to preserve audit history
-	if err := h.db.Model(&model.User{}).Where("id = ?", id).Update("active", false).Error; err != nil {
-		slog.Error("failed to deactivate user", "error", err)
-		return echo.NewHTTPError(http.StatusInternalServerError, "failed to deactivate user")
+	// Permanently delete the user from the database
+	if err := h.db.Unscoped().Delete(&model.User{}, id).Error; err != nil {
+		slog.Error("failed to delete user", "error", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to delete user")
 	}
 
 	return c.Redirect(http.StatusSeeOther, "/users")

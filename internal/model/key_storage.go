@@ -24,4 +24,5 @@ type KeyStorage struct {
 
 	// Relations
 	Project *Project `gorm:"foreignKey:ProjectID"`
+	Creator *User    `gorm:"foreignKey:CreatedBy"`
 }

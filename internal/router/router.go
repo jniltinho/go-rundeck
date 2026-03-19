@@ -2,13 +2,11 @@ package router
 
 import (
 	"embed"
-	"fmt"
 	"html/template"
 	"io"
 	"io/fs"
 	"log/slog"
 	"net/http"
-	"path"
 	"strings"
 
 	"go-rundeck/internal/handler"
@@ -165,21 +163,7 @@ func Setup(
 
 // parseTemplates loads all *.html files from the embedded FS into a single Template set.
 func parseTemplates(fsys embed.FS) *template.Template {
-	funcMap := template.FuncMap{
-		"lower": strings.ToLower,
-		"upper": strings.ToUpper,
-		"base":  path.Base,
-		"add":   func(a, b int) int { return a + b },
-		"sub":   func(a, b int) int { return a - b },
-		"fmtDur": func(p *float64) string {
-			if p == nil {
-				return "—"
-			}
-			return fmt.Sprintf("%.1fs", *p)
-		},
-	}
-
-	tmpl := template.New("").Funcs(funcMap)
+	tmpl := template.New("").Funcs(templateFuncMap())
 
 	err := fs.WalkDir(fsys, "web/templates", func(filePath string, d fs.DirEntry, err error) error {
 		if err != nil || d.IsDir() {

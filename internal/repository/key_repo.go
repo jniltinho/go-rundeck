@@ -82,7 +82,7 @@ func (r *KeyRepository) Decrypt(cipherTextB64 string) (string, error) {
 
 func (r *KeyRepository) ListByProject(projectID *uint) ([]model.KeyStorage, error) {
 	var keys []model.KeyStorage
-	query := r.db
+	query := r.db.Preload("Creator")
 	if projectID != nil {
 		query = query.Where("project_id = ?", projectID)
 	} else {
