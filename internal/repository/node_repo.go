@@ -28,10 +28,10 @@ func (r *NodeRepository) GetByID(id uint) (*model.Node, error) {
 	return &n, err
 }
 
-// ListByProject returns all active nodes belonging to a project.
+// ListByProject returns all nodes belonging to a project.
 func (r *NodeRepository) ListByProject(projectID uint) ([]model.Node, error) {
 	var nodes []model.Node
-	err := r.db.Where("project_id = ? AND active = ?", projectID, true).
+	err := r.db.Where("project_id = ?", projectID).
 		Order("name asc").Find(&nodes).Error
 	return nodes, err
 }

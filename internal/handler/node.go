@@ -216,3 +216,21 @@ func (h *NodeHandler) Delete(c *echo.Context) error {
 	}
 	return c.Redirect(http.StatusSeeOther, "/projects/"+c.Param("id")+"/nodes")
 }
+
+// ToggleActive changes the active status of a node.
+func (h *NodeHandler) ToggleActive(c *echo.Context) error {
+	nodeID, err := parseID(c, "nid")
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "invalid node id")
+	}
+	node, err := h.nodeRepo.GetByID(nodeID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusNotFound, "node not found")
+	}
+
+	node.Active = !node.Active
+	if err := h.nodeRepo.Update(node); err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	return c.Redirect(http.StatusSeeOther, "/projects/"+c.Param("id")+"/nodes")
+}

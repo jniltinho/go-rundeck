@@ -123,6 +123,7 @@ func Setup(
 	protected.POST("/projects/:id/nodes/:nid", nodeH.Update)
 	protected.POST("/projects/:id/nodes/:nid/delete", nodeH.Delete)
 	protected.POST("/projects/:id/nodes/:nid/check-ssh", nodeH.CheckSSH)
+	protected.POST("/projects/:id/nodes/:nid/toggle-active", nodeH.ToggleActive)
 
 	// Jobs
 	protected.GET("/projects/:id/jobs", jobH.List)

@@ -107,6 +107,12 @@
        class="px-4 py-2 bg-white border-2 border-[#0C0C0C] font-mono font-bold text-sm shadow-[2px_2px_0_#0C0C0C] hover:bg-[#F5F0E8] transition-colors">
       &larr; Back to Nodes
     </a>
+    <form method="POST" action="/projects/{{.Node.ProjectID}}/nodes/{{.Node.ID}}/toggle-active" class="inline">
+      <button type="submit"
+              class="px-4 py-2 border-2 font-mono font-bold text-sm transition-colors {{if .Node.Active}}bg-green-100 border-green-600 text-green-700 shadow-[2px_2px_0_green] hover:bg-green-200{{else}}bg-red-100 border-red-600 text-red-700 shadow-[2px_2px_0_red] hover:bg-red-200{{end}}">
+        {{if .Node.Active}}Deactivate Node{{else}}Activate Node{{end}}
+      </button>
+    </form>
     <form method="POST" action="/projects/{{.Node.ProjectID}}/nodes/{{.Node.ID}}/delete"
           onsubmit="return confirm('Delete this node?')">
       <button type="submit"
