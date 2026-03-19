@@ -8,6 +8,10 @@
       <p class="text-sm text-gray-500 font-mono mt-1">{{.Project.Description}}</p>
     </div>
     <div class="flex gap-2">
+      <button onclick="document.getElementById('modal-edit').classList.remove('hidden')"
+         class="px-4 py-2 bg-white border-2 border-[#0C0C0C] text-[#0C0C0C] font-mono font-bold text-sm shadow-[2px_2px_0_#0C0C0C] hover:shadow-[3px_3px_0_#0C0C0C] transition-all">
+        Edit Project
+      </button>
       <a href="/projects/{{.Project.ID}}/jobs/new"
          class="px-4 py-2 bg-[#FF5C00] border-2 border-[#0C0C0C] text-white font-mono font-bold text-sm shadow-[2px_2px_0_#0C0C0C] hover:shadow-[3px_3px_0_#0C0C0C] transition-all">
         + New Job
@@ -46,6 +50,44 @@
     <p class="font-mono text-sm">{{.Project.Tags}}</p>
   </div>
   {{end}}
+</div>
+
+<!-- Edit Project Modal -->
+<div id="modal-edit" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white border-4 border-[#0C0C0C] shadow-[3px_3px_0_#0C0C0C] w-full max-w-lg">
+    <div class="px-6 py-4 border-b-4 border-[#0C0C0C] flex justify-between items-center bg-[#F5F0E8]">
+      <h3 class="font-mono font-bold text-lg uppercase tracking-wider">Edit Project</h3>
+      <button type="button" onclick="document.getElementById('modal-edit').classList.add('hidden')"
+        class="text-gray-500 hover:text-[#FF5C00] font-mono font-bold text-xl leading-none">&times;</button>
+    </div>
+    <form method="POST" action="/projects/{{.Project.ID}}" class="px-6 py-5 space-y-4">
+      <div>
+        <label class="block text-xs font-mono font-bold uppercase tracking-wider text-gray-600 mb-1">Name</label>
+        <input type="text" name="name" value="{{.Project.Name}}" required
+          class="w-full border-2 border-[#0C0C0C] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#FF5C00]">
+      </div>
+      <div>
+        <label class="block text-xs font-mono font-bold uppercase tracking-wider text-gray-600 mb-1">Description</label>
+        <input type="text" name="description" value="{{.Project.Description}}"
+          class="w-full border-2 border-[#0C0C0C] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#FF5C00]">
+      </div>
+      <div>
+        <label class="block text-xs font-mono font-bold uppercase tracking-wider text-gray-600 mb-1">Tags</label>
+        <input type="text" name="tags" value="{{.Project.Tags}}" placeholder="tag1, tag2"
+          class="w-full border-2 border-[#0C0C0C] px-3 py-2 font-mono text-sm focus:outline-none focus:border-[#FF5C00]">
+      </div>
+      <div class="flex gap-3 pt-2">
+        <button type="submit"
+          class="flex-1 py-2 bg-[#FF5C00] border-2 border-[#0C0C0C] text-white font-mono font-bold text-sm shadow-[2px_2px_0_#0C0C0C] hover:shadow-[3px_3px_0_#0C0C0C] transition-all">
+          Save Changes
+        </button>
+        <button type="button" onclick="document.getElementById('modal-edit').classList.add('hidden')"
+          class="flex-1 py-2 bg-white border-2 border-[#0C0C0C] font-mono font-bold text-sm shadow-[2px_2px_0_#0C0C0C] hover:shadow-[3px_3px_0_#0C0C0C] transition-all">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <!-- Delete Confirmation Modal -->

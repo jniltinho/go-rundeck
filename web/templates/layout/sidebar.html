@@ -11,7 +11,7 @@
   <nav class="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
     <a href="/"
        class="flex items-center gap-3 px-3 py-2 text-sm font-medium border-2 border-transparent hover:border-[#FF5C00] hover:bg-[#FF5C00] hover:text-black transition-colors">
-      <span class="font-mono">~/</span> Dashboard
+      <i data-lucide="layout-dashboard" class="w-4 h-4 text-[#FFD600]"></i> Dashboard
     </a>
 
     <div class="pt-4 pb-1">
@@ -20,7 +20,7 @@
 
     <a href="/projects"
        class="flex items-center gap-3 px-3 py-2 text-sm font-medium border-2 border-transparent hover:border-[#FF5C00] hover:bg-[#FF5C00] hover:text-black transition-colors">
-      <span class="font-mono text-[#FFD600]">&#9632;</span> Projects
+      <i data-lucide="folder" class="w-4 h-4 text-[#FFD600]"></i> Projects
     </a>
 
     <div class="pt-4 pb-1">
@@ -29,20 +29,19 @@
 
     <a href="/keys"
        class="flex items-center gap-3 px-3 py-2 text-sm font-medium border-2 border-transparent hover:border-[#FF5C00] hover:bg-[#FF5C00] hover:text-black transition-colors">
-      <span class="font-mono text-[#FFD600]">&#9670;</span> Key Storage
+      <i data-lucide="key-round" class="w-4 h-4 text-[#FFD600]"></i> Key Storage
     </a>
 
     {{if eq (printf "%s" .Role) "admin"}}
     <a href="/users"
        class="flex items-center gap-3 px-3 py-2 text-sm font-medium border-2 border-transparent hover:border-[#FF5C00] hover:bg-[#FF5C00] hover:text-black transition-colors">
-      <span class="font-mono text-[#FFD600]">&#9787;</span> Users
+      <i data-lucide="users" class="w-4 h-4 text-[#FFD600]"></i> Users
     </a>
     {{end}}
 
-    <a href="/settings"
-       class="flex items-center gap-3 px-3 py-2 text-sm font-medium border-2 border-transparent hover:border-[#FF5C00] hover:bg-[#FF5C00] hover:text-black transition-colors">
-      <span class="font-mono text-[#FFD600]">&#9881;</span> Settings
-    </a>
+    <span class="flex items-center gap-3 px-3 py-2 text-sm font-medium border-2 border-transparent opacity-40 cursor-not-allowed">
+      <i data-lucide="settings" class="w-4 h-4 text-[#FFD600]"></i> Settings
+    </span>
   </nav>
 
 </aside>
