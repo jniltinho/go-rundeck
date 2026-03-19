@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	"go-rundeck/config"
 	"go-rundeck/internal/service"
 )
 
@@ -19,7 +20,13 @@ func runCheckSSHDebug() error {
 	}
 
 	logf("starting debug SSH test")
-	sshSvc := service.NewSSHService(10)
+
+	cfg, err := config.Load(cfgFile)
+	if err != nil {
+		return fmt.Errorf("load config: %w", err)
+	}
+
+	sshSvc := service.NewSSHService(cfg.SSH.ConnectTimeout)
 	result, err := sshSvc.RunCommandWithPasswordDebug(sshHost, sshPort, sshUser, sshPass, "hostname && whoami && date", logf)
 	if err != nil {
 		return fmt.Errorf("SSH failed: %w", err)
@@ -45,7 +52,12 @@ func runCheckSSH() error {
 
 	fmt.Printf("Testing SSH connection to %s@%s:%d ...\n", sshUser, sshHost, sshPort)
 
-	sshSvc := service.NewSSHService(10)
+	cfg, err := config.Load(cfgFile)
+	if err != nil {
+		return fmt.Errorf("load config: %w", err)
+	}
+
+	sshSvc := service.NewSSHService(cfg.SSH.ConnectTimeout)
 	result, err := sshSvc.RunCommandWithPassword(sshHost, sshPort, sshUser, sshPass, "hostname && whoami && date")
 	if err != nil {
 		return fmt.Errorf("SSH connection failed: %w", err)

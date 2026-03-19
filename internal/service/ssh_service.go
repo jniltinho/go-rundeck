@@ -56,39 +56,9 @@ func (s *SSHService) RunCommand(host string, port int, user string, authMethod s
 	return s.runSession(client, cmd)
 }
 
-// RunCommandWithPassword connects using password or keyboard-interactive auth.
-// Many modern SSH servers (Ubuntu 22+) require keyboard-interactive instead of plain password.
+// RunCommandWithPassword connects using a plain-text password.
 func (s *SSHService) RunCommandWithPassword(host string, port int, user, password, cmd string) (*SSHResult, error) {
-	config := &ssh.ClientConfig{
-		User: user,
-		Auth: []ssh.AuthMethod{
-			ssh.Password(password),
-			ssh.KeyboardInteractive(func(user, instruction string, questions []string, echos []bool) ([]string, error) {
-				answers := make([]string, len(questions))
-				for i := range questions {
-					answers[i] = password
-				}
-				return answers, nil
-			}),
-		},
-		HostKeyCallback: ssh.InsecureIgnoreHostKey(), //nolint:gosec
-		Timeout:         s.connectTimeout,
-	}
-
-	addr := net.JoinHostPort(host, fmt.Sprintf("%d", port))
-	conn, err := net.DialTimeout("tcp", addr, s.connectTimeout)
-	if err != nil {
-		return nil, fmt.Errorf("tcp dial %s: %w", addr, err)
-	}
-
-	sshConn, chans, reqs, err := ssh.NewClientConn(conn, addr, config)
-	if err != nil {
-		return nil, fmt.Errorf("ssh handshake %s: %w", addr, err)
-	}
-	client := ssh.NewClient(sshConn, chans, reqs)
-	defer client.Close()
-
-	return s.runSession(client, cmd)
+	return s.RunCommand(host, port, user, ssh.Password(password), cmd)
 }
 
 // RunCommandWithKey connects using a PEM-encoded private key.
