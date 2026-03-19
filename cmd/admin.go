@@ -12,15 +12,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var (
-	addUserFlag       string
-	sshHost           string
-	sshPort           int
-	sshUser           string
-	sshPass           string
-	sshCheckFlag      bool
-	sshCheckDebugFlag bool
-)
+var addUserFlag string
 
 var adminCmd = &cobra.Command{
 	Use:   "admin",
@@ -29,24 +21,12 @@ var adminCmd = &cobra.Command{
 		if addUserFlag != "" {
 			return runAddUser(addUserFlag)
 		}
-		if sshCheckFlag {
-			return runCheckSSH()
-		}
-		if sshCheckDebugFlag {
-			return runCheckSSHDebug()
-		}
 		return cmd.Help()
 	},
 }
 
 func init() {
 	adminCmd.Flags().StringVar(&addUserFlag, "add-user", "", "Create a new admin user (format: email:password)")
-	adminCmd.Flags().BoolVar(&sshCheckFlag, "check-ssh", false, "Test SSH connection to a host")
-	adminCmd.Flags().BoolVar(&sshCheckDebugFlag, "check-ssh-debug", false, "Test SSH connection with verbose step-by-step debug output")
-	adminCmd.Flags().StringVar(&sshHost, "host", "", "SSH host")
-	adminCmd.Flags().IntVar(&sshPort, "port", 22, "SSH port")
-	adminCmd.Flags().StringVar(&sshUser, "user", "root", "SSH user")
-	adminCmd.Flags().StringVar(&sshPass, "pass", "", "SSH password")
 	rootCmd.AddCommand(adminCmd)
 }
 

@@ -46,6 +46,26 @@ func (s *KeyService) GetDecryptedContent(id uint) (string, error) {
 	return s.repo.Decrypt(key.ContentEnc)
 }
 
+func (s *KeyService) Update(id uint, name string, keyType model.KeyType, description string, newContent string) error {
+	key, err := s.repo.GetByID(id)
+	if err != nil {
+		return err
+	}
+	if name != "" {
+		key.Name = name
+	}
+	key.KeyType = keyType
+	key.Description = description
+	if newContent != "" {
+		encrypted, err := s.repo.Encrypt(newContent)
+		if err != nil {
+			return err
+		}
+		key.ContentEnc = encrypted
+	}
+	return s.repo.Update(key)
+}
+
 func (s *KeyService) Delete(id uint) error {
 	return s.repo.Delete(id)
 }

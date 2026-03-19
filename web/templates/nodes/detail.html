@@ -86,11 +86,16 @@
             <textarea name="description" rows="4"
                       class="w-full border-2 border-[#0C0C0C] px-3 py-1.5 font-mono text-sm focus:outline-none focus:border-[#FF5C00] resize-none">{{.Node.Description}}</textarea>
           </div>
-          <div class="pt-2">
+          <div class="pt-2 flex items-center gap-3 flex-wrap">
             <button type="submit"
                     class="px-4 py-2 bg-[#FF5C00] border-2 border-[#0C0C0C] text-white font-mono font-bold text-sm shadow-[2px_2px_0_#0C0C0C] hover:bg-[#e05200] transition-colors">
               Save Changes
             </button>
+            <button type="button" id="btn-check-ssh"
+                    class="px-4 py-2 bg-[#FFD600] border-2 border-[#0C0C0C] text-[#0C0C0C] font-mono font-bold text-sm shadow-[2px_2px_0_#0C0C0C] hover:brightness-95 transition-colors">
+              Test SSH
+            </button>
+            <span id="ssh-check-result" class="font-mono text-sm hidden"></span>
           </div>
         </div>
       </div>
@@ -111,4 +116,35 @@
     </form>
   </div>
 </div>
+<script>
+document.getElementById('btn-check-ssh').addEventListener('click', function() {
+  const btn = this;
+  const result = document.getElementById('ssh-check-result');
+  btn.disabled = true;
+  btn.textContent = 'Testing…';
+  result.className = 'font-mono text-sm hidden';
+
+  fetch('/projects/{{.Node.ProjectID}}/nodes/{{.Node.ID}}/check-ssh', {method: 'POST'})
+    .then(r => r.json())
+    .then(data => {
+      result.classList.remove('hidden');
+      if (data.ok) {
+        result.textContent = '✓ Connected';
+        result.className = 'font-mono text-sm text-green-700';
+      } else {
+        result.textContent = '✗ ' + (data.error || 'failed');
+        result.className = 'font-mono text-sm text-red-600';
+      }
+    })
+    .catch(() => {
+      result.classList.remove('hidden');
+      result.textContent = '✗ request failed';
+      result.className = 'font-mono text-sm text-red-600';
+    })
+    .finally(() => {
+      btn.disabled = false;
+      btn.textContent = 'Test SSH';
+    });
+});
+</script>
 {{template "layout/base-close" .}}

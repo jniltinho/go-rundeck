@@ -10,7 +10,7 @@
   </div>
 
   <div class="bg-white border-4 border-[#0C0C0C] shadow-[3px_3px_0_#0C0C0C] overflow-x-auto">
-    <table id="executionsTable" class="w-full text-sm font-mono">
+    <table id="executionsTable" class="w-full text-sm font-mono stripe hover dt-zebra">
       <thead>
         <tr class="bg-[#0C0C0C] text-white">
           <th class="text-left px-4 py-3 text-xs uppercase tracking-wider">ID</th>
@@ -24,7 +24,7 @@
       </thead>
       <tbody>
         {{range .Executions}}
-        <tr class="border-b border-gray-200 hover:bg-[#F5F0E8] transition-colors">
+        <tr class="border-b border-gray-200 transition-colors">
           <td class="px-4 py-3">
             <a href="/executions/{{.ID}}" class="text-[#FF5C00] hover:underline font-bold">#{{.ID}}</a>
           </td>

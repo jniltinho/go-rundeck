@@ -104,6 +104,10 @@ func (r *KeyRepository) Create(key *model.KeyStorage) error {
 	return r.db.Create(key).Error
 }
 
+func (r *KeyRepository) Update(key *model.KeyStorage) error {
+	return r.db.Save(key).Error
+}
+
 func (r *KeyRepository) Delete(id uint) error {
 	// Unlink any nodes referencing this key before deleting
 	if err := r.db.Exec("UPDATE nodes SET key_id = NULL WHERE key_id = ?", id).Error; err != nil {

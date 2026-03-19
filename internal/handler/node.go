@@ -171,6 +171,40 @@ func (h *NodeHandler) Update(c *echo.Context) error {
 	return c.Redirect(http.StatusSeeOther, "/projects/"+c.Param("id")+"/nodes")
 }
 
+// CheckSSH tests SSH connectivity for a node and returns JSON.
+func (h *NodeHandler) CheckSSH(c *echo.Context) error {
+	nodeID, err := parseID(c, "nid")
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]interface{}{"ok": false, "error": "invalid node id"})
+	}
+	node, err := h.nodeRepo.GetByID(nodeID)
+	if err != nil {
+		return c.JSON(http.StatusNotFound, map[string]interface{}{"ok": false, "error": "node not found"})
+	}
+
+	if node.AuthType == "password" {
+		password := ""
+		if node.KeyID != nil {
+			password, _ = h.keySvc.GetDecryptedContent(*node.KeyID)
+		}
+		_, err = h.sshSvc.RunCommandWithPassword(node.Hostname, node.SSHPort, node.SSHUser, password, "echo ok")
+	} else {
+		if node.KeyID == nil {
+			return c.JSON(http.StatusOK, map[string]interface{}{"ok": false, "error": "no key configured"})
+		}
+		pemKey, keyErr := h.keySvc.GetDecryptedContent(*node.KeyID)
+		if keyErr != nil || pemKey == "" {
+			return c.JSON(http.StatusOK, map[string]interface{}{"ok": false, "error": "could not load key"})
+		}
+		_, err = h.sshSvc.RunCommandWithKey(node.Hostname, node.SSHPort, node.SSHUser, []byte(pemKey), "echo ok")
+	}
+
+	if err != nil {
+		return c.JSON(http.StatusOK, map[string]interface{}{"ok": false, "error": err.Error()})
+	}
+	return c.JSON(http.StatusOK, map[string]interface{}{"ok": true})
+}
+
 // Delete soft-deletes a node.
 func (h *NodeHandler) Delete(c *echo.Context) error {
 	nodeID, err := parseID(c, "nid")

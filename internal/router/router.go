@@ -122,6 +122,7 @@ func Setup(
 	protected.GET("/projects/:id/nodes/:nid", nodeH.Show)
 	protected.POST("/projects/:id/nodes/:nid", nodeH.Update)
 	protected.POST("/projects/:id/nodes/:nid/delete", nodeH.Delete)
+	protected.POST("/projects/:id/nodes/:nid/check-ssh", nodeH.CheckSSH)
 
 	// Jobs
 	protected.GET("/projects/:id/jobs", jobH.List)
@@ -149,11 +150,13 @@ func Setup(
 	adminGrp := e.Group("/users", mw.RequireAuth, mw.RequireAdmin)
 	adminGrp.GET("", userH.List)
 	adminGrp.POST("", userH.Create)
+	adminGrp.POST("/:id", userH.Update)
 	adminGrp.POST("/:id/delete", userH.Delete)
 
 	// Key Storage
 	protected.GET("/keys", keyH.ListSystemKeys)
 	protected.POST("/keys", keyH.Create)
+	protected.POST("/keys/:id", keyH.Update)
 	protected.POST("/keys/:id/delete", keyH.Delete)
 
 	return e

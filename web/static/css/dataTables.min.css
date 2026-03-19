@@ -1024,3 +1024,9 @@ div.dt-container .dt-paging .dt-paging-button.disabled:active {
 
 /* Processing indicator */
 div.dt-processing > div:last-child > div { background: #FF5C00; }
+
+/* Zebra stripe — use class "dt-zebra" on the table */
+table.dataTable.dt-zebra {
+  --dt-row-stripe: 245, 240, 232;
+  --dt-row-stripe-alpha: 1;
+}

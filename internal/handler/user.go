@@ -68,6 +68,44 @@ func (h *UserHandler) Create(c *echo.Context) error {
 	return c.Redirect(http.StatusSeeOther, "/users")
 }
 
+// Update handles editing a user's details
+func (h *UserHandler) Update(c *echo.Context) error {
+	idParam := c.Param("id")
+	id, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid user ID")
+	}
+
+	var user model.User
+	if err := h.db.First(&user, id).Error; err != nil {
+		return echo.NewHTTPError(http.StatusNotFound, "User not found")
+	}
+
+	if v := c.FormValue("username"); v != "" {
+		user.Username = v
+	}
+	user.Email = c.FormValue("email")
+	if v := c.FormValue("role"); v != "" {
+		user.Role = model.Role(v)
+	}
+	user.Active = c.FormValue("active") == "1"
+
+	if pw := c.FormValue("password"); pw != "" {
+		hash, err := bcrypt.GenerateFromPassword([]byte(pw), bcrypt.DefaultCost)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusInternalServerError, "failed to process password")
+		}
+		user.PasswordHash = string(hash)
+	}
+
+	if err := h.db.Save(&user).Error; err != nil {
+		slog.Error("failed to update user", "error", err)
+		return echo.NewHTTPError(http.StatusInternalServerError, "failed to update user")
+	}
+
+	return c.Redirect(http.StatusSeeOther, "/users")
+}
+
 // Delete handles deleting or deactivating a user
 func (h *UserHandler) Delete(c *echo.Context) error {
 	idParam := c.Param("id")

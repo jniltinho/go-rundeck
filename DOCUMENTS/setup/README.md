@@ -150,7 +150,34 @@ cd /opt/go-rundeck
 
 ---
 
-## 8. Install and Start the systemd Service
+## 8. Test SSH Connectivity (Optional)
+
+Before configuring nodes, you can verify SSH access from the server using the built-in `check-ssh` command:
+
+```bash
+# Basic test
+./gorundeck check-ssh --host 192.168.1.10 --pass mypassword
+
+# Custom user and port
+./gorundeck check-ssh --host 192.168.1.10 --user deploy --port 2222 --pass mypassword
+
+# Verbose debug output (step-by-step authentication trace)
+./gorundeck check-ssh --host 192.168.1.10 --pass mypassword --debug
+```
+
+Flags:
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--host` | *(required)* | SSH host or IP |
+| `--pass` | *(required)* | SSH password |
+| `--user` | `root` | SSH user |
+| `--port` | `22` | SSH port |
+| `--debug` | `false` | Verbose step-by-step output |
+
+---
+
+## 9. Install and Start the systemd Service
 
 ```bash
 # Copy the service file
@@ -173,7 +200,7 @@ sudo tail -f /opt/go-rundeck/gorundeck.log
 
 ---
 
-## 9. Enable HTTPS (Optional)
+## 10. Enable HTTPS (Optional)
 
 ### Option A — Self-signed certificate (development)
 
@@ -215,7 +242,7 @@ When `ssl_enable = true`, the session cookie is automatically marked `Secure` an
 
 ---
 
-## 10. Firewall (UFW)
+## 11. Firewall (UFW)
 
 Allow the application port:
 
@@ -253,3 +280,5 @@ sudo ufw reload
 | `./gorundeck migrate` | Run database migrations |
 | `./gorundeck admin --add-user user@x.com:pass` | Add admin user |
 | `./gorundeck config-check` | Validate config and test DB connection |
+| `./gorundeck check-ssh --host HOST --pass PASS` | Test SSH connectivity to a host |
+| `./gorundeck check-ssh --host HOST --pass PASS --debug` | Test SSH with verbose debug output |
