@@ -1,0 +1,35 @@
+services:
+  mariadb:
+    image: mariadb:10.11
+    container_name: gorundeck-db
+    environment:
+      MARIADB_ROOT_PASSWORD: rootpassword
+      MARIADB_DATABASE: gorundeck
+      MARIADB_USER: rundeck
+      MARIADB_PASSWORD: rundeck_pass
+    ports:
+      - "3306:3320"
+    healthcheck:
+      test: ["CMD", "mariadb-admin" ,"ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  gorundeck:
+    image: jniltinho/go-rundeck:latest
+    container_name: gorundeck-app
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      DB_HOST: mariadb
+      DB_PORT: 3306
+      DB_USER: rundeck
+      DB_PASSWORD: rundeck_pass
+      DB_NAME: gorundeck
+      ADMIN_EMAIL: admin@example.com
+      ADMIN_PASSWORD: adminpassword
+    ports:
+      - "8080:8080"
+    # volumes:
+    #   - ./config.toml.example:/app/config.toml

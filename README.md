@@ -24,6 +24,26 @@
 - MariaDB 10.x+
 - Tailwind CSS CLI (for development)
 
+### Quick Start with Docker Compose
+
+The fastest way to get a full environment running (MariaDB + Go-Rundeck).
+
+**Requirements**: Docker and Docker Compose installed.
+
+```bash
+make build-docker
+docker-compose up -d
+```
+
+This will:
+- Start a MariaDB container.
+- Build and start the Go-Rundeck container.
+- **Automatically** wait for the DB to be ready.
+- **Automatically** run database migrations.
+- **Automatically** create an initial admin (default: `admin@example.com` / `adminpassword`).
+
+You can customize the environment variables and port mappings in the `docker-compose.yml` file.
+
 ### Build from Source
 ```bash
 # Clone the repository
