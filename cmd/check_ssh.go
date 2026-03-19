@@ -26,9 +26,11 @@ var checkSSHCmd = &cobra.Command{
 	Short: "Test SSH connectivity to a host",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		if sshDebug {
-			return runCheckSSHDebug()
+			runCheckSSHDebug()
+			return nil
 		}
-		return runCheckSSH()
+		runCheckSSH()
+		return nil
 	},
 }
 
