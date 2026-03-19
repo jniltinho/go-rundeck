@@ -57,6 +57,18 @@ make all
    ./bin/gorundeck serve
    ```
 
+### Testing SSH Connections
+
+You can test SSH connectivity to a node directly from the CLI:
+
+```bash
+# Standard test
+./bin/gorundeck admin --check-ssh --host 10.0.0.10 --user root --pass mypassword
+
+# Verbose debug test
+./bin/gorundeck admin --check-ssh-debug --host 10.0.0.10 --user root --pass mypassword
+```
+
 ## Configuration
 
 All options are documented in `config.toml.example`. Key sections:
