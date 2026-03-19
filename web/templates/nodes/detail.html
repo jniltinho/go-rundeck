@@ -10,55 +10,92 @@
     <h2 class="text-2xl font-bold font-mono mt-1">{{.Node.Name}}</h2>
   </div>
 
-  <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-    <div class="bg-white border-4 border-[#0C0C0C] shadow-[3px_3px_0_#0C0C0C] p-6 space-y-3">
-      <h3 class="font-mono font-bold text-sm uppercase tracking-widest border-b-2 border-[#0C0C0C] pb-2">Connection</h3>
-      <div class="space-y-2 font-mono text-sm">
-        <div class="flex justify-between">
-          <span class="text-gray-500">Hostname</span>
-          <span class="font-bold">{{.Node.Hostname}}</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-gray-500">SSH Port</span>
-          <span class="font-bold">{{.Node.SSHPort}}</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-gray-500">SSH User</span>
-          <span class="font-bold">{{.Node.SSHUser}}</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-gray-500">Auth Type</span>
-          <span class="px-2 py-0.5 border border-[#0C0C0C] text-xs font-bold">{{.Node.AuthType}}</span>
-        </div>
-        <div class="flex justify-between">
-          <span class="text-gray-500">OS Family</span>
-          <span class="font-bold">{{if .Node.OSFamily}}{{.Node.OSFamily}}{{else}}—{{end}}</span>
-        </div>
-      </div>
-    </div>
+  <!-- Edit Form -->
+  <form method="POST" action="/projects/{{.Node.ProjectID}}/nodes/{{.Node.ID}}">
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <!-- Connection -->
+      <div class="bg-white border-4 border-[#0C0C0C] shadow-[3px_3px_0_#0C0C0C] p-6 space-y-4">
+        <h3 class="font-mono font-bold text-sm uppercase tracking-widest border-b-2 border-[#0C0C0C] pb-2">Connection</h3>
 
-    <div class="bg-white border-4 border-[#0C0C0C] shadow-[3px_3px_0_#0C0C0C] p-6 space-y-3">
-      <h3 class="font-mono font-bold text-sm uppercase tracking-widest border-b-2 border-[#0C0C0C] pb-2">Metadata</h3>
-      <div class="space-y-2 font-mono text-sm">
-        <div class="flex justify-between">
-          <span class="text-gray-500">Status</span>
-          {{if .Node.Active}}
-          <span class="px-2 py-0.5 bg-green-100 border border-green-600 text-green-700 text-xs font-bold">ACTIVE</span>
-          {{else}}
-          <span class="px-2 py-0.5 bg-red-100 border border-red-600 text-red-600 text-xs font-bold">INACTIVE</span>
-          {{end}}
+        <div class="space-y-3 font-mono text-sm">
+          <div>
+            <label class="block text-gray-500 mb-1">Name</label>
+            <input type="text" name="name" value="{{.Node.Name}}" required
+                   class="w-full border-2 border-[#0C0C0C] px-3 py-1.5 font-mono text-sm focus:outline-none focus:border-[#FF5C00]">
+          </div>
+          <div>
+            <label class="block text-gray-500 mb-1">Hostname</label>
+            <input type="text" name="hostname" value="{{.Node.Hostname}}" required
+                   class="w-full border-2 border-[#0C0C0C] px-3 py-1.5 font-mono text-sm focus:outline-none focus:border-[#FF5C00]">
+          </div>
+          <div>
+            <label class="block text-gray-500 mb-1">SSH Port</label>
+            <input type="number" name="ssh_port" value="{{.Node.SSHPort}}"
+                   class="w-full border-2 border-[#0C0C0C] px-3 py-1.5 font-mono text-sm focus:outline-none focus:border-[#FF5C00]">
+          </div>
+          <div>
+            <label class="block text-gray-500 mb-1">SSH User</label>
+            <input type="text" name="ssh_user" value="{{.Node.SSHUser}}"
+                   class="w-full border-2 border-[#0C0C0C] px-3 py-1.5 font-mono text-sm focus:outline-none focus:border-[#FF5C00]">
+          </div>
+          <div>
+            <label class="block text-gray-500 mb-1">Auth Type</label>
+            <select name="auth_type"
+                    class="w-full border-2 border-[#0C0C0C] px-3 py-1.5 font-mono text-sm focus:outline-none focus:border-[#FF5C00] bg-white">
+              <option value="key" {{if eq (print .Node.AuthType) "key"}}selected{{end}}>SSH Key</option>
+              <option value="password" {{if eq (print .Node.AuthType) "password"}}selected{{end}}>Password</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-gray-500 mb-1">SSH Key / Password</label>
+            <select name="key_id"
+                    class="w-full border-2 border-[#0C0C0C] px-3 py-1.5 font-mono text-sm focus:outline-none focus:border-[#FF5C00] bg-white">
+              <option value="0">— none —</option>
+              {{range .Keys}}
+              <option value="{{.ID}}" {{if eq $.SelectedKeyID .ID}}selected{{end}}>{{.Name}}</option>
+              {{end}}
+            </select>
+          </div>
+          <div>
+            <label class="block text-gray-500 mb-1">OS Family</label>
+            <input type="text" name="os_family" value="{{.Node.OSFamily}}" placeholder="linux / windows"
+                   class="w-full border-2 border-[#0C0C0C] px-3 py-1.5 font-mono text-sm focus:outline-none focus:border-[#FF5C00]">
+          </div>
         </div>
-        <div class="flex justify-between">
-          <span class="text-gray-500">Tags</span>
-          <span class="font-bold">{{if .Node.Tags}}{{.Node.Tags}}{{else}}—{{end}}</span>
-        </div>
-        <div>
-          <span class="text-gray-500">Description</span>
-          <p class="mt-1 text-gray-700">{{if .Node.Description}}{{.Node.Description}}{{else}}<em>none</em>{{end}}</p>
+      </div>
+
+      <!-- Metadata -->
+      <div class="bg-white border-4 border-[#0C0C0C] shadow-[3px_3px_0_#0C0C0C] p-6 space-y-4">
+        <h3 class="font-mono font-bold text-sm uppercase tracking-widest border-b-2 border-[#0C0C0C] pb-2">Metadata</h3>
+        <div class="space-y-3 font-mono text-sm">
+          <div class="flex justify-between items-center">
+            <span class="text-gray-500">Status</span>
+            {{if .Node.Active}}
+            <span class="px-2 py-0.5 bg-green-100 border border-green-600 text-green-700 text-xs font-bold">ACTIVE</span>
+            {{else}}
+            <span class="px-2 py-0.5 bg-red-100 border border-red-600 text-red-600 text-xs font-bold">INACTIVE</span>
+            {{end}}
+          </div>
+          <div>
+            <label class="block text-gray-500 mb-1">Tags</label>
+            <input type="text" name="tags" value="{{.Node.Tags}}" placeholder="web, db, prod"
+                   class="w-full border-2 border-[#0C0C0C] px-3 py-1.5 font-mono text-sm focus:outline-none focus:border-[#FF5C00]">
+          </div>
+          <div>
+            <label class="block text-gray-500 mb-1">Description</label>
+            <textarea name="description" rows="4"
+                      class="w-full border-2 border-[#0C0C0C] px-3 py-1.5 font-mono text-sm focus:outline-none focus:border-[#FF5C00] resize-none">{{.Node.Description}}</textarea>
+          </div>
+          <div class="pt-2">
+            <button type="submit"
+                    class="px-4 py-2 bg-[#FF5C00] border-2 border-[#0C0C0C] text-white font-mono font-bold text-sm shadow-[2px_2px_0_#0C0C0C] hover:bg-[#e05200] transition-colors">
+              Save Changes
+            </button>
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </form>
 
   <div class="flex gap-3">
     <a href="/projects/{{.Node.ProjectID}}/nodes"

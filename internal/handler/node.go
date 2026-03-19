@@ -69,11 +69,21 @@ func (h *NodeHandler) Show(c *echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusNotFound, "node not found")
 	}
+	keys, err := h.keySvc.ListSystemKeys()
+	if err != nil {
+		keys = make([]model.KeyStorage, 0)
+	}
+	var selectedKeyID uint
+	if node.KeyID != nil {
+		selectedKeyID = *node.KeyID
+	}
 	return c.Render(http.StatusOK, "nodes/detail.html", map[string]interface{}{
-		"Title":       node.Name,
-		"Node":        node,
-		"CurrentUser": c.Get(middleware.SessionUser),
-		"Role":        c.Get(middleware.SessionRole),
+		"Title":         node.Name,
+		"Node":          node,
+		"Keys":          keys,
+		"SelectedKeyID": selectedKeyID,
+		"CurrentUser":   c.Get(middleware.SessionUser),
+		"Role":          c.Get(middleware.SessionRole),
 	})
 }
 
@@ -142,6 +152,18 @@ func (h *NodeHandler) Update(c *echo.Context) error {
 	node.Tags = c.FormValue("tags")
 	node.Description = c.FormValue("description")
 	node.OSFamily = c.FormValue("os_family")
+	if v := c.FormValue("auth_type"); v != "" {
+		node.AuthType = model.AuthType(v)
+	}
+
+	keyIDStr := c.FormValue("key_id")
+	if keyIDStr == "" || keyIDStr == "0" {
+		node.KeyID = nil
+	} else {
+		kid, _ := strconv.ParseUint(keyIDStr, 10, 32)
+		kidu := uint(kid)
+		node.KeyID = &kidu
+	}
 
 	if err := h.nodeRepo.Update(node); err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())

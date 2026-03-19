@@ -3,7 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
-	"strings"
+"strings"
 	"sync"
 	"time"
 
@@ -254,7 +254,7 @@ func (s *JobService) runStep(node model.Node, step model.JobStep, execOpts []mod
 		}
 		return s.sshSvc.RunCommandWithPassword(node.Hostname, node.SSHPort, node.SSHUser, password, cmd)
 	}
-	
+
 	// Key auth
 	if node.KeyID != nil {
 		pemKeyStr, err := s.keySvc.GetDecryptedContent(*node.KeyID)
@@ -262,7 +262,7 @@ func (s *JobService) runStep(node model.Node, step model.JobStep, execOpts []mod
 			return s.sshSvc.RunCommandWithKey(node.Hostname, node.SSHPort, node.SSHUser, []byte(pemKeyStr), cmd)
 		}
 	}
-	
+
 	return nil, fmt.Errorf("no valid credentials found or key could not be decrypted for node %s", node.Name)
 }
 

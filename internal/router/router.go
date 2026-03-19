@@ -41,6 +41,8 @@ func Setup(
 	secret string,
 	sessionTimeout int,
 	sslEnabled bool,
+	version string,
+	sshConnectTimeout int,
 ) *echo.Echo {
 	e := echo.New()
 	e.Logger = slog.Default()
@@ -82,12 +84,12 @@ func Setup(
 	}
 
 	projectSvc := service.NewProjectService(projectRepo)
-	sshSvc := service.NewSSHService(10)
+	sshSvc := service.NewSSHService(sshConnectTimeout)
 	execSvc := service.NewExecutionService(execRepo)
 	keySvc := service.NewKeyService(keyRepo)
 	jobSvc := service.NewJobService(jobRepo, nodeRepo, execSvc, sshSvc, keySvc)
 
-	authH := handler.NewAuthHandler(db)
+	authH := handler.NewAuthHandler(db, version)
 	dashH := handler.NewDashboardHandler(projectSvc, execSvc, nodeRepo, jobRepo, execRepo)
 	projectH := handler.NewProjectHandler(projectSvc)
 	nodeH := handler.NewNodeHandler(nodeRepo, projectSvc, sshSvc, keySvc)

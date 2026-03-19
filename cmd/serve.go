@@ -60,7 +60,11 @@ func runServe(cmd *cobra.Command, args []string) error {
 	if timeout <= 0 {
 		timeout = 60
 	}
-	e := router.Setup(db, templatesFS, staticFS, cfg.Server.SessionSecret, timeout, cfg.Server.SSLEnabled)
+	sshTimeout := cfg.SSH.ConnectTimeout
+	if sshTimeout <= 0 {
+		sshTimeout = 10
+	}
+	e := router.Setup(db, templatesFS, staticFS, cfg.Server.SessionSecret, timeout, cfg.Server.SSLEnabled, appVersion, sshTimeout)
 
 	if cfg.Server.SSLEnabled {
 		if cfg.Server.SSLCert == "" || cfg.Server.SSLKey == "" {

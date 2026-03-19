@@ -56,9 +56,39 @@ func (s *SSHService) RunCommand(host string, port int, user string, authMethod s
 	return s.runSession(client, cmd)
 }
 
-// RunCommandWithPassword connects using a plain-text password.
+// RunCommandWithPassword connects using password or keyboard-interactive auth.
+// Many modern SSH servers (Ubuntu 22+) require keyboard-interactive instead of plain password.
 func (s *SSHService) RunCommandWithPassword(host string, port int, user, password, cmd string) (*SSHResult, error) {
-	return s.RunCommand(host, port, user, ssh.Password(password), cmd)
+	config := &ssh.ClientConfig{
+		User: user,
+		Auth: []ssh.AuthMethod{
+			ssh.Password(password),
+			ssh.KeyboardInteractive(func(user, instruction string, questions []string, echos []bool) ([]string, error) {
+				answers := make([]string, len(questions))
+				for i := range questions {
+					answers[i] = password
+				}
+				return answers, nil
+			}),
+		},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(), //nolint:gosec
+		Timeout:         s.connectTimeout,
+	}
+
+	addr := net.JoinHostPort(host, fmt.Sprintf("%d", port))
+	conn, err := net.DialTimeout("tcp", addr, s.connectTimeout)
+	if err != nil {
+		return nil, fmt.Errorf("tcp dial %s: %w", addr, err)
+	}
+
+	sshConn, chans, reqs, err := ssh.NewClientConn(conn, addr, config)
+	if err != nil {
+		return nil, fmt.Errorf("ssh handshake %s: %w", addr, err)
+	}
+	client := ssh.NewClient(sshConn, chans, reqs)
+	defer client.Close()
+
+	return s.runSession(client, cmd)
 }
 
 // RunCommandWithKey connects using a PEM-encoded private key.
@@ -101,4 +131,88 @@ func (s *SSHService) runSession(client *ssh.Client, cmd string) (*SSHResult, err
 func (s *SSHService) TestConnection(host string, port int, user string, authMethod ssh.AuthMethod) error {
 	_, err := s.RunCommand(host, port, user, authMethod, "echo ok")
 	return err
+}
+
+// RunCommandWithPasswordDebug is a copy of RunCommandWithPassword with verbose step-by-step logging.
+func (s *SSHService) RunCommandWithPasswordDebug(host string, port int, user, password, cmd string, logf func(string, ...any)) (*SSHResult, error) {
+	addr := net.JoinHostPort(host, fmt.Sprintf("%d", port))
+	logf("[1] target: %s@%s  password_len=%d", user, addr, len(password))
+
+	// Step 2: TCP dial
+	logf("[2] TCP dial %s (timeout=%s)...", addr, s.connectTimeout)
+	conn, err := net.DialTimeout("tcp", addr, s.connectTimeout)
+	if err != nil {
+		logf("[2] FAIL tcp dial: %v", err)
+		return nil, fmt.Errorf("tcp dial %s: %w", addr, err)
+	}
+	logf("[2] OK tcp connected")
+
+	// Step 3: build SSH client config
+	logf("[3] building SSH config: auth=[password, keyboard-interactive]")
+	config := &ssh.ClientConfig{
+		User: user,
+		Auth: []ssh.AuthMethod{
+			ssh.Password(password),
+			ssh.KeyboardInteractive(func(u, instruction string, questions []string, echos []bool) ([]string, error) {
+				logf("[3] keyboard-interactive challenge: user=%q instruction=%q questions=%d", u, instruction, len(questions))
+				answers := make([]string, len(questions))
+				for i, q := range questions {
+					logf("[3]   question[%d]: %q", i, q)
+					answers[i] = password
+				}
+				logf("[3] keyboard-interactive: returning %d answers", len(answers))
+				return answers, nil
+			}),
+		},
+		HostKeyCallback: ssh.InsecureIgnoreHostKey(), //nolint:gosec
+		Timeout:         s.connectTimeout,
+	}
+
+	// Step 4: SSH handshake
+	logf("[4] starting SSH handshake...")
+	sshConn, chans, reqs, err := ssh.NewClientConn(conn, addr, config)
+	if err != nil {
+		logf("[4] FAIL handshake: %v", err)
+		return nil, fmt.Errorf("ssh handshake %s: %w", addr, err)
+	}
+	logf("[4] OK handshake — server version: %s", sshConn.ServerVersion())
+
+	client := ssh.NewClient(sshConn, chans, reqs)
+	defer client.Close()
+
+	// Step 5: open session
+	logf("[5] opening session...")
+	session, err := client.NewSession()
+	if err != nil {
+		logf("[5] FAIL new session: %v", err)
+		return nil, fmt.Errorf("new session: %w", err)
+	}
+	defer session.Close()
+	logf("[5] OK session opened")
+
+	// Step 6: run command
+	logf("[6] running command: %s", cmd)
+	var stdout, stderr bytes.Buffer
+	session.Stdout = &stdout
+	session.Stderr = &stderr
+
+	exitCode := 0
+	if err := session.Run(cmd); err != nil {
+		if exitErr, ok := err.(*ssh.ExitError); ok {
+			exitCode = exitErr.ExitStatus()
+			logf("[6] command exited with code %d", exitCode)
+		} else {
+			logf("[6] FAIL run: %v", err)
+			return nil, fmt.Errorf("run command: %w", err)
+		}
+	} else {
+		logf("[6] OK exit code 0")
+	}
+
+	logf("[7] stdout_len=%d  stderr_len=%d", stdout.Len(), stderr.Len())
+	return &SSHResult{
+		Stdout:   stdout.String(),
+		Stderr:   stderr.String(),
+		ExitCode: exitCode,
+	}, nil
 }

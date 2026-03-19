@@ -13,19 +13,21 @@ import (
 
 // AuthHandler handles login/logout.
 type AuthHandler struct {
-	db *gorm.DB
+	db      *gorm.DB
+	version string
 }
 
 // NewAuthHandler creates a new AuthHandler.
-func NewAuthHandler(db *gorm.DB) *AuthHandler {
-	return &AuthHandler{db: db}
+func NewAuthHandler(db *gorm.DB, version string) *AuthHandler {
+	return &AuthHandler{db: db, version: version}
 }
 
 // ShowLogin renders the login page.
 func (h *AuthHandler) ShowLogin(c *echo.Context) error {
 	return c.Render(http.StatusOK, "auth/login.html", map[string]interface{}{
-		"Title": "Login",
-		"Error": "",
+		"Title":   "Login",
+		"Error":   "",
+		"Version": h.version,
 	})
 }
 
@@ -37,15 +39,17 @@ func (h *AuthHandler) Login(c *echo.Context) error {
 	var user model.User
 	if err := h.db.Where("username = ? AND active = ?", username, true).First(&user).Error; err != nil {
 		return c.Render(http.StatusUnauthorized, "auth/login.html", map[string]interface{}{
-			"Title": "Login",
-			"Error": "Invalid username or password",
+			"Title":   "Login",
+			"Error":   "Invalid username or password",
+			"Version": h.version,
 		})
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(password)); err != nil {
 		return c.Render(http.StatusUnauthorized, "auth/login.html", map[string]interface{}{
-			"Title": "Login",
-			"Error": "Invalid username or password",
+			"Title":   "Login",
+			"Error":   "Invalid username or password",
+			"Version": h.version,
 		})
 	}
 
