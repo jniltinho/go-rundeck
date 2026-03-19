@@ -77,6 +77,9 @@ curl -sLO https://github.com/tailwindlabs/tailwindcss/releases/latest/download/t
 chmod +x tailwindcss-linux-x64
 sudo mv tailwindcss-linux-x64 /usr/local/bin/tailwindcss
 
+## Install UPX (required for binary compression)
+sudo apt install upx-ucl -y
+
 # Build the binary (CSS + Go)
 make all
 
