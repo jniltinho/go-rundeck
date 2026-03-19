@@ -2,10 +2,14 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
+	"time"
 
 	"go-rundeck/config"
 	"go-rundeck/internal/service"
 
+	"github.com/jedib0t/go-pretty/v6/table"
+	"github.com/jedib0t/go-pretty/v6/text"
 	"github.com/spf13/cobra"
 )
 
@@ -40,53 +44,98 @@ func init() {
 }
 
 func runCheckSSH() error {
-	fmt.Printf("Testing SSH connection to %s@%s:%d ...\n", sshUser, sshHost, sshPort)
-
 	cfg, err := config.Load(cfgFile)
 	if err != nil {
 		return fmt.Errorf("load config: %w", err)
 	}
 
+	start := time.Now()
 	sshSvc := service.NewSSHService(cfg.SSH.ConnectTimeout)
 	result, err := sshSvc.RunCommandWithPassword(sshHost, sshPort, sshUser, sshPass, "hostname && whoami && date")
+	elapsed := time.Since(start)
+
+	t := table.NewWriter()
+	t.Style().Options.SeparateRows = true
+
 	if err != nil {
-		return fmt.Errorf("SSH connection failed: %w", err)
+		t.SetTitle(text.FgRed.Sprint("SSH Connection Test — FAILED"))
+		t.AppendRows([]table.Row{
+			{"Host", fmt.Sprintf("%s:%d", sshHost, sshPort)},
+			{"User", sshUser},
+			{"Duration", elapsed.Round(time.Millisecond)},
+			{"Error", err.Error()},
+		})
+		fmt.Println(t.Render())
+		return err
 	}
 
-	fmt.Println("─── stdout ───────────────────────────────")
-	fmt.Print(result.Stdout)
+	t.SetTitle(text.FgGreen.Sprint("SSH Connection Test — SUCCESS"))
+	t.AppendRows([]table.Row{
+		{"Host", fmt.Sprintf("%s:%d", sshHost, sshPort)},
+		{"User", sshUser},
+		{"Duration", elapsed.Round(time.Millisecond)},
+		{"Exit Code", result.ExitCode},
+		{"Output", strings.TrimSpace(result.Stdout)},
+	})
 	if result.Stderr != "" {
-		fmt.Println("─── stderr ───────────────────────────────")
-		fmt.Print(result.Stderr)
+		t.AppendRow(table.Row{"Stderr", strings.TrimSpace(result.Stderr)})
 	}
-	fmt.Printf("─── exit code: %d ────────────────────────\n", result.ExitCode)
+	fmt.Println(t.Render())
 	return nil
 }
 
 func runCheckSSHDebug() error {
-	logf := func(format string, args ...any) {
-		fmt.Printf("[DEBUG] "+format+"\n", args...)
-	}
-
-	logf("starting debug SSH test")
-
 	cfg, err := config.Load(cfgFile)
 	if err != nil {
 		return fmt.Errorf("load config: %w", err)
 	}
 
-	sshSvc := service.NewSSHService(cfg.SSH.ConnectTimeout)
-	result, err := sshSvc.RunCommandWithPasswordDebug(sshHost, sshPort, sshUser, sshPass, "hostname && whoami && date", logf)
-	if err != nil {
-		return fmt.Errorf("SSH failed: %w", err)
+	var logLines []string
+	logf := func(format string, args ...any) {
+		logLines = append(logLines, fmt.Sprintf(format, args...))
 	}
 
-	fmt.Println("─── stdout ───────────────────────────────")
-	fmt.Print(result.Stdout)
-	if result.Stderr != "" {
-		fmt.Println("─── stderr ───────────────────────────────")
-		fmt.Print(result.Stderr)
+	logf("starting debug SSH test to %s@%s:%d", sshUser, sshHost, sshPort)
+
+	start := time.Now()
+	sshSvc := service.NewSSHService(cfg.SSH.ConnectTimeout)
+	result, err := sshSvc.RunCommandWithPasswordDebug(sshHost, sshPort, sshUser, sshPass, "hostname && whoami && date", logf)
+	elapsed := time.Since(start)
+
+	t := table.NewWriter()
+	t.Style().Options.SeparateRows = true
+
+	if err != nil {
+		t.SetTitle(text.FgRed.Sprint("SSH Debug Test — FAILED"))
+		t.AppendRows([]table.Row{
+			{"Host", fmt.Sprintf("%s:%d", sshHost, sshPort)},
+			{"User", sshUser},
+			{"Duration", elapsed.Round(time.Millisecond)},
+			{"Error", err.Error()},
+		})
+		fmt.Println(t.Render())
+		fmt.Println()
+		for _, line := range logLines {
+			fmt.Println(line)
+		}
+		return err
 	}
-	fmt.Printf("─── exit code: %d ────────────────────────\n", result.ExitCode)
+
+	t.SetTitle(text.FgGreen.Sprint("SSH Debug Test — SUCCESS"))
+	t.AppendRows([]table.Row{
+		{"Host", fmt.Sprintf("%s:%d", sshHost, sshPort)},
+		{"User", sshUser},
+		{"Duration", elapsed.Round(time.Millisecond)},
+		{"Exit Code", result.ExitCode},
+		{"Output", strings.TrimSpace(result.Stdout)},
+	})
+	if result.Stderr != "" {
+		t.AppendRow(table.Row{"Stderr", strings.TrimSpace(result.Stderr)})
+	}
+	fmt.Println(t.Render())
+	fmt.Println()
+	for _, line := range logLines {
+		fmt.Println(line)
+	}
 	return nil
 }

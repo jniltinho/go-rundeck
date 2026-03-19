@@ -79,15 +79,26 @@ make all
 
 ### Testing SSH Connections
 
-You can test SSH connectivity to a node directly from the CLI:
+You can test SSH connectivity to a node directly from the CLI using the dedicated `check-ssh` command:
 
 ```bash
 # Standard test
-./bin/gorundeck admin --check-ssh --host 10.0.0.10 --user root --pass mypassword
+./bin/gorundeck check-ssh --host 10.0.0.10 --pass mypassword
 
-# Verbose debug test
-./bin/gorundeck admin --check-ssh-debug --host 10.0.0.10 --user root --pass mypassword
+# Custom user and port
+./bin/gorundeck check-ssh --host 10.0.0.10 --user deploy --port 2222 --pass mypassword
+
+# Verbose debug output (step-by-step authentication trace)
+./bin/gorundeck check-ssh --host 10.0.0.10 --pass mypassword --debug
 ```
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--host` | *(required)* | SSH host or IP |
+| `--pass` | *(required)* | SSH password |
+| `--user` | `root` | SSH user |
+| `--port` | `22` | SSH port |
+| `--debug` | `false` | Verbose step-by-step output |
 
 ## Configuration
 
