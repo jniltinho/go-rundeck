@@ -55,38 +55,36 @@
 </div>
 
 <!-- Create Project Modal -->
-<div id="modal-create" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-  <div class="bg-[#F5F0E8] border-4 border-[#0C0C0C] shadow-[4px_4px_0_#FF5C00] w-full max-w-md p-6">
-    <div class="flex items-center justify-between mb-4 border-b-4 border-[#0C0C0C] pb-3">
-      <h3 class="font-bold font-mono text-lg">New Project</h3>
-      <button onclick="document.getElementById('modal-create').classList.add('hidden')"
-              class="font-mono text-lg font-bold hover:text-[#FF5C00]">&times;</button>
+<div id="modal-create" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+  <div class="bg-white border-4 border-[#0C0C0C] shadow-[3px_3px_0_#0C0C0C] w-full max-w-lg">
+    <div class="px-6 py-4 border-b-4 border-[#0C0C0C] flex justify-between items-center bg-[#F5F0E8]">
+      <h3 class="font-mono font-bold text-lg uppercase tracking-wider">Create Project</h3>
+      <button type="button" onclick="document.getElementById('modal-create').classList.add('hidden')" class="text-xl font-bold hover:text-[#FF5C00]">&times;</button>
     </div>
-    <form method="POST" action="/projects" class="space-y-4">
+    <form method="POST" action="/projects" class="p-6 space-y-4">
       <div>
-        <label class="block text-xs font-mono font-bold uppercase tracking-widest mb-1">Name *</label>
+        <label class="block font-mono text-sm font-bold mb-1">Name</label>
         <input type="text" name="name" required
-               class="w-full px-3 py-2 bg-white border-2 border-[#0C0C0C] font-mono text-sm focus:outline-none focus:border-[#FF5C00] shadow-[1px_1px_0_#0C0C0C]">
+               class="w-full border-2 border-[#0C0C0C] p-2 font-mono text-sm focus:outline-none focus:border-[#FF5C00]">
       </div>
       <div>
-        <label class="block text-xs font-mono font-bold uppercase tracking-widest mb-1">Description</label>
+        <label class="block font-mono text-sm font-bold mb-1">Description</label>
         <textarea name="description" rows="2"
-                  class="w-full px-3 py-2 bg-white border-2 border-[#0C0C0C] font-mono text-sm focus:outline-none focus:border-[#FF5C00] shadow-[1px_1px_0_#0C0C0C]"></textarea>
+                  class="w-full border-2 border-[#0C0C0C] p-2 font-mono text-sm focus:outline-none focus:border-[#FF5C00]"></textarea>
       </div>
       <div>
-        <label class="block text-xs font-mono font-bold uppercase tracking-widest mb-1">Tags</label>
+        <label class="block font-mono text-sm font-bold mb-1">Tags</label>
         <input type="text" name="tags" placeholder="prod,web,infra"
-               class="w-full px-3 py-2 bg-white border-2 border-[#0C0C0C] font-mono text-sm focus:outline-none focus:border-[#FF5C00] shadow-[1px_1px_0_#0C0C0C]">
+               class="w-full border-2 border-[#0C0C0C] p-2 font-mono text-sm focus:outline-none focus:border-[#FF5C00]">
       </div>
-      <div class="flex gap-3 pt-2">
-        <button type="submit"
-                class="flex-1 py-2 bg-[#FF5C00] border-2 border-[#0C0C0C] text-white font-mono font-bold text-sm shadow-[2px_2px_0_#0C0C0C] hover:shadow-[3px_3px_0_#0C0C0C] transition-all">
-          Create
-        </button>
-        <button type="button"
-                onclick="document.getElementById('modal-create').classList.add('hidden')"
-                class="flex-1 py-2 bg-white border-2 border-[#0C0C0C] font-mono font-bold text-sm shadow-[2px_2px_0_#0C0C0C] hover:bg-[#F5F0E8] transition-all">
+      <div class="pt-4 flex justify-end gap-3">
+        <button type="button" onclick="document.getElementById('modal-create').classList.add('hidden')"
+                class="px-4 py-2 border-2 border-[#0C0C0C] font-mono font-bold hover:bg-gray-100">
           Cancel
+        </button>
+        <button type="submit"
+                class="px-4 py-2 bg-[#FFD600] border-2 border-[#0C0C0C] font-mono font-bold shadow-[2px_2px_0_#0C0C0C] hover:translate-y-px hover:translate-x-px hover:shadow-[1px_1px_0_#0C0C0C]">
+          Create
         </button>
       </div>
     </form>
