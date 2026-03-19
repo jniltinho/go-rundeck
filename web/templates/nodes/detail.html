@@ -40,7 +40,7 @@
           </div>
           <div>
             <label class="block text-gray-500 mb-1">Auth Type</label>
-            <select name="auth_type"
+            <select name="auth_type" id="auth_type"
                     class="w-full border-2 border-[#0C0C0C] px-3 py-1.5 font-mono text-sm focus:outline-none focus:border-[#FF5C00] bg-white">
               <option value="key" {{if eq (print .Node.AuthType) "key"}}selected{{end}}>SSH Key</option>
               <option value="password" {{if eq (print .Node.AuthType) "password"}}selected{{end}}>Password</option>
@@ -48,11 +48,11 @@
           </div>
           <div>
             <label class="block text-gray-500 mb-1">SSH Key / Password</label>
-            <select name="key_id"
+            <select name="key_id" id="key_id"
                     class="w-full border-2 border-[#0C0C0C] px-3 py-1.5 font-mono text-sm focus:outline-none focus:border-[#FF5C00] bg-white">
               <option value="0">— none —</option>
               {{range .Keys}}
-              <option value="{{.ID}}" {{if eq $.SelectedKeyID .ID}}selected{{end}}>{{.Name}}</option>
+              <option value="{{.ID}}" data-type="{{.KeyType}}" {{if eq $.SelectedKeyID .ID}}selected{{end}}>{{.Name}}</option>
               {{end}}
             </select>
           </div>
@@ -145,6 +145,43 @@ document.getElementById('btn-check-ssh').addEventListener('click', function() {
       btn.disabled = false;
       btn.textContent = 'Test SSH';
     });
+});
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const authTypeSelect = document.getElementById('auth_type');
+  const keyIdSelect = document.getElementById('key_id');
+  
+  if (authTypeSelect && keyIdSelect) {
+    const options = Array.from(keyIdSelect.options).filter(opt => opt.value !== "0" && opt.value !== "");
+    
+    function filterKeys() {
+      const authType = authTypeSelect.value;
+      const targetType = authType === 'key' ? 'private_key' : 'password';
+      
+      const currentValue = keyIdSelect.value;
+      keyIdSelect.innerHTML = '<option value="0">— none —</option>';
+      
+      let hasSelected = false;
+      options.forEach(opt => {
+        if (opt.dataset.type === targetType) {
+          keyIdSelect.appendChild(opt);
+          if (opt.value === currentValue) {
+            opt.selected = true;
+            hasSelected = true;
+          }
+        }
+      });
+      
+      if (!hasSelected && currentValue !== "0") {
+        keyIdSelect.value = "0";
+      }
+    }
+    
+    authTypeSelect.addEventListener('change', filterKeys);
+    filterKeys();
+  }
 });
 </script>
 {{template "layout/base-close" .}}

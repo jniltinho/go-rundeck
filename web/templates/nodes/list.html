@@ -97,7 +97,7 @@
         </div>
         <div>
           <label class="block text-xs font-mono font-bold uppercase tracking-widest mb-1">Auth Type</label>
-          <select name="auth_type"
+          <select name="auth_type" id="new_auth_type"
                   class="w-full px-3 py-2 bg-white border-2 border-[#0C0C0C] font-mono text-sm focus:outline-none focus:border-[#FF5C00]">
             <option value="key">SSH Key</option>
             <option value="password">Password</option>
@@ -105,11 +105,11 @@
         </div>
         <div>
           <label class="block text-xs font-mono font-bold uppercase tracking-widest mb-1">Credential (Key Storage)</label>
-          <select name="key_id"
+          <select name="key_id" id="new_key_id"
                   class="w-full px-3 py-2 bg-white border-2 border-[#0C0C0C] font-mono text-sm focus:outline-none focus:border-[#FF5C00]">
             <option value="">-- Select Key --</option>
             {{range .Keys}}
-              <option value="{{.ID}}">{{.Name}} ({{.KeyType}})</option>
+              <option value="{{.ID}}" data-type="{{.KeyType}}">{{.Name}} ({{.KeyType}})</option>
             {{end}}
           </select>
         </div>
@@ -138,4 +138,41 @@
     </form>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const authTypeSelect = document.getElementById('new_auth_type');
+  const keyIdSelect = document.getElementById('new_key_id');
+  
+  if (authTypeSelect && keyIdSelect) {
+    const options = Array.from(keyIdSelect.options).filter(opt => opt.value !== "");
+    
+    function filterKeys() {
+      const authType = authTypeSelect.value;
+      const targetType = authType === 'key' ? 'private_key' : 'password';
+      
+      const currentValue = keyIdSelect.value;
+      keyIdSelect.innerHTML = '<option value="">-- Select Key --</option>';
+      
+      let hasSelected = false;
+      options.forEach(opt => {
+        if (opt.dataset.type === targetType) {
+          keyIdSelect.appendChild(opt);
+          if (opt.value === currentValue) {
+            opt.selected = true;
+            hasSelected = true;
+          }
+        }
+      });
+      
+      if (!hasSelected && currentValue !== "") {
+        keyIdSelect.value = "";
+      }
+    }
+    
+    authTypeSelect.addEventListener('change', filterKeys);
+    filterKeys();
+  }
+});
+</script>
 {{template "layout/base-close" .}}
